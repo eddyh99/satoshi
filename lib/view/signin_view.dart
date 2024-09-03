@@ -306,7 +306,9 @@ class _SigninViewState extends State<SigninView> {
                       ),
                       ButtonWidget(
                           text: "Login",
-                          onTap: () => (),
+                          onTap: () {
+                             Get.toNamed("/front-screen/home");
+                          },
                           textcolor: const Color(0xFF000000),
                           backcolor: const Color(0xFFBFA573),
                           width: 150,

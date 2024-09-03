@@ -1,19 +1,26 @@
 import 'package:flutter/material.dart';
+import 'package:satoshi/utils/extensions.dart';
+import 'package:satoshi/view/widget/bottomnav_widget.dart';
 import 'package:satoshi/view/widget/button_widget.dart';
 import 'package:satoshi/view/widget/text_widget.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
-class SubscriptionView extends StatefulWidget {
-  const SubscriptionView({super.key});
+class HomeView extends StatefulWidget {
+  const HomeView({super.key});
 
   @override
-  State<SubscriptionView> createState() {
-    return _SubscriptionViewState();
+  State<HomeView> createState() {
+    return _HomeViewState();
   }
 }
 
-class _SubscriptionViewState extends State<SubscriptionView>
-    with WidgetsBindingObserver {
+// Future<void> _launchInWebViewOrVC(Uri url) async {
+//   if (!await launchUrl(url, mode: LaunchMode.inAppWebView)) {
+//     throw Exception('Could not launch $url');
+//   }
+// }
+
+class _HomeViewState extends State<HomeView>with WidgetsBindingObserver {
   late final WebViewController _webViewController;
   bool _isError = false;
   bool _isWebViewLoaded = false;
@@ -154,9 +161,10 @@ class _SubscriptionViewState extends State<SubscriptionView>
   @override
   Widget build(BuildContext context) {
     return SafeArea(
+        minimum: EdgeInsets.symmetric(horizontal: 3.w),
         child: Scaffold(
-      backgroundColor: Colors.black,
-      body: _isError && !_isWebViewLoaded
+            backgroundColor: Colors.black,
+            body: _isError && !_isWebViewLoaded
           ? const Center(
               child: TextWidget(
                 text:
@@ -165,6 +173,10 @@ class _SubscriptionViewState extends State<SubscriptionView>
               ),
             )
           : WebViewWidget(controller: _webViewController),
-    ));
+             bottomNavigationBar: const Satoshinav(
+          number: 0,
+        ))
+    );
+            
   }
 }

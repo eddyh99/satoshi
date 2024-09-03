@@ -3,6 +3,9 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:satoshi/view/landing_view.dart';
+import 'package:satoshi/view/member/history_view.dart';
+import 'package:satoshi/view/member/home_view.dart';
+import 'package:satoshi/view/member/setting_view.dart';
 import 'package:satoshi/view/register_view.dart';
 import 'package:satoshi/view/signin_view.dart';
 import 'package:satoshi/view/splashscreen.dart';
@@ -65,6 +68,21 @@ class MyApp extends StatelessWidget {
             page: () => const SubscriptionView(),
             transition: Transition.rightToLeft,
           ),
+          GetPage(
+            name: '/front-screen/home', 
+            page: ()=>const HomeView(), 
+            transition: Transition.fadeIn
+            ),
+          GetPage(
+            name: '/front-screen/history', 
+            page: ()=>const HistoryView(), 
+            transition: Transition.fadeIn
+          ),
+          GetPage(
+            name: '/front-screen/setting', 
+            page: ()=>const SettingView(), 
+            transition: Transition.fadeIn
+            )
         ]);
   }
 }
