@@ -13,12 +13,6 @@ class LandingView extends StatefulWidget {
   }
 }
 
-// Future<void> _launchInWebViewOrVC(Uri url) async {
-//   if (!await launchUrl(url, mode: LaunchMode.inAppWebView)) {
-//     throw Exception('Could not launch $url');
-//   }
-// }
-
 class _LandingViewState extends State<LandingView> {
   @override
   void initState() {
