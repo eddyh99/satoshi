@@ -1,10 +1,11 @@
 import 'dart:convert';
+import 'dart:developer';
 import 'package:crypto/crypto.dart';
 import 'package:email_validator/email_validator.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:intl/intl.dart';
+import 'package:http/http.dart' as http;
 import 'package:satoshi/utils/extensions.dart';
 import 'package:satoshi/utils/functions.dart';
 import 'package:satoshi/utils/globalvar.dart';
@@ -36,10 +37,12 @@ class _RegisterViewState extends State<RegisterView> {
       TextEditingController();
   final TextEditingController _refTextController = TextEditingController();
   late final WebViewController wvcontroller;
+  String _ipAddress = 'Fetching IP...';
 
   @override
   void initState() {
     super.initState();
+     _getIPAddress(); 
   }
 
   @override
@@ -505,7 +508,7 @@ class _RegisterViewState extends State<RegisterView> {
                                               checkColor: Colors
                                                   .white, // Color of the check mark
                                               activeColor: Colors.blue,
-                                              side: BorderSide(
+                                              side: const BorderSide(
                                                 color: Colors.white,
                                                 width: 1.0,
                                               ),
@@ -535,6 +538,8 @@ class _RegisterViewState extends State<RegisterView> {
                                         }
                                         if (_signupFormKey.currentState!
                                             .validate()) {
+                                                   log("100-$_ipAddress");
+
                                           Map<String, dynamic> mdata;
                                           mdata = {
                                             'email': _emailTextController.text,
@@ -543,7 +548,7 @@ class _RegisterViewState extends State<RegisterView> {
                                                     _passwordTextController
                                                         .text))
                                                 .toString(),
-                                            "timezone": "Asia/Makassar",
+                                            "ipaddress": _ipAddress,
                                             "referral":
                                                 _refTextController.text.isEmpty
                                                     ? null
@@ -554,7 +559,7 @@ class _RegisterViewState extends State<RegisterView> {
                                           await satoshiAPI(
                                                   url, jsonEncode(mdata))
                                               .then((ress) {
-                                            var result = jsonDecode(ress);
+                                              var result = jsonDecode(ress);
                                             if (result['code'] == '201') {
                                               dynamic email =
                                                   _emailTextController.text;
@@ -647,5 +652,27 @@ class _RegisterViewState extends State<RegisterView> {
         ),
       ),
     );
+  }
+  Future<void> _getIPAddress() async {
+    try {
+      // Call the IPify API to get the IP address
+      final response = await http.get(Uri.parse('https://api.ipify.org?format=json'));
+
+      if (response.statusCode == 200) {
+        // Parse the JSON response
+        final data = json.decode(response.body);
+        setState(() {
+          _ipAddress = data['ip'];
+        });
+      } else {
+        setState(() {
+          _ipAddress = 'Failed to get IP address';
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _ipAddress = 'Error occurred: $e';
+      });
+    }
   }
 }
