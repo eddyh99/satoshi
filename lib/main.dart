@@ -9,7 +9,7 @@ import 'package:satoshi/view/member/setting_view.dart';
 import 'package:satoshi/view/register_view.dart';
 import 'package:satoshi/view/signin_view.dart';
 import 'package:satoshi/view/splashscreen.dart';
-import 'package:satoshi/view/subsription_view.dart';
+import 'package:satoshi/view/subscribe_view.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -65,24 +65,21 @@ class MyApp extends StatelessWidget {
           ),
           GetPage(
             name: '/front-screen/subscribe',
-            page: () => const SubscriptionView(),
+            page: () => const SubscribeView(),
             transition: Transition.rightToLeft,
           ),
           GetPage(
-            name: '/front-screen/home', 
-            page: ()=>const HomeView(), 
-            transition: Transition.fadeIn
-            ),
+              name: '/front-screen/home',
+              page: () => const HomeView(),
+              transition: Transition.fadeIn),
           GetPage(
-            name: '/front-screen/history', 
-            page: ()=>const HistoryView(), 
-            transition: Transition.fadeIn
-          ),
+              name: '/front-screen/history',
+              page: () => const HistoryView(),
+              transition: Transition.fadeIn),
           GetPage(
-            name: '/front-screen/setting', 
-            page: ()=>const SettingView(), 
-            transition: Transition.fadeIn
-            )
+              name: '/front-screen/setting',
+              page: () => const SettingView(),
+              transition: Transition.fadeIn)
         ]);
   }
 }

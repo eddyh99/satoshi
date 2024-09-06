@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 import 'package:email_validator/email_validator.dart';
 import 'package:satoshi/utils/extensions.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void printDebug(Object object) {
   if (kDebugMode) {
@@ -34,27 +35,27 @@ int randomNumber() {
 //   return token;
 // }
 
-// Future<String> expatAPI(Uri url, String body) async {
-//   final prefs = await SharedPreferences.getInstance();
-//   var email = prefs.getString("email");
-//   var passwd = prefs.getString("passwd");
+Future<String> satoshiAPI(Uri url, String body) async {
+  final prefs = await SharedPreferences.getInstance();
+  var email = prefs.getString("email");
+  var passwd = prefs.getString("passwd");
 
-//   String token = '';
-//   var headers = {'Content-Type': 'application/json'};
-//   if (email != null && passwd != null) {
-//     token = sha1.convert(utf8.encode(email + passwd)).toString();
-//   }
+  String token = '';
+  var headers = {'Content-Type': 'application/json'};
+  if (email != null && passwd != null) {
+    token = sha1.convert(utf8.encode(email + passwd)).toString();
+  }
 
-//   if (token.isNotEmpty) {
-//     headers = {
-//       'Content-Type': 'application/json',
-//       'Authorization': 'Bearer $token'
-//     };
-//   }
+  if (token.isNotEmpty) {
+    headers = {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer $token'
+    };
+  }
 
-//   Response response = await post(url, headers: headers, body: body);
-//   return response.body;
-// }
+  Response response = await post(url, headers: headers, body: body);
+  return response.body;
+}
 
 // Future<dynamic> readAllPref() async {
 //   final prefs = await SharedPreferences.getInstance();
@@ -102,7 +103,7 @@ showAlert(String value, BuildContext context) {
       value,
       style: const TextStyle(color: Colors.white),
     ),
-    backgroundColor: const Color.fromRGBO(114, 162, 138, 1),
+    backgroundColor: const Color(0xFFBFA573),
   ));
 }
 
