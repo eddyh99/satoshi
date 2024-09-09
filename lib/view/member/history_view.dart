@@ -20,13 +20,14 @@ class HistoryView extends StatefulWidget {
 //   }
 // }
 
-class _HistoryViewState extends State<HistoryView>with WidgetsBindingObserver {
+class _HistoryViewState extends State<HistoryView> with WidgetsBindingObserver {
   late final WebViewController _webViewController;
   bool _isError = false;
   bool _isWebViewLoaded = false;
   bool _isInitialLoad = true;
+  bool _isDataReady = true;
   late final DateTime _loadStartTime;
-  static const Duration _initialLoadTimeout = Duration(seconds: 10);
+  static const Duration _initialLoadTimeout = Duration(seconds: 20);
 
   @override
   void initState() {
@@ -36,6 +37,7 @@ class _HistoryViewState extends State<HistoryView>with WidgetsBindingObserver {
     // Initialize WebView
     _webViewController = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..setBackgroundColor(const Color(0x00000000))
       ..setNavigationDelegate(
         NavigationDelegate(
           onPageStarted: (String url) {
@@ -55,8 +57,8 @@ class _HistoryViewState extends State<HistoryView>with WidgetsBindingObserver {
                   // Check if initial load timeout has passed
                   final duration = DateTime.now().difference(_loadStartTime);
                   if (duration < _initialLoadTimeout) {
-                    _isError =
-                        false; // Ensure initial load is considered successful if it completed
+                    _isError = false;
+                    _isDataReady = false;
                   } else if (_isError) {
                     _showErrorBottomSheet();
                   }
@@ -83,7 +85,8 @@ class _HistoryViewState extends State<HistoryView>with WidgetsBindingObserver {
           },
         ),
       )
-      ..loadRequest(Uri.parse('https://flutter.dev'));
+      ..loadRequest(
+          Uri.parse('https://pnglobalinternational.com/widget/signal/history'));
   }
 
   @override
@@ -160,23 +163,32 @@ class _HistoryViewState extends State<HistoryView>with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-        minimum: EdgeInsets.symmetric(horizontal: 3.w),
-        child: Scaffold(
-            backgroundColor: Colors.black,
-            body: _isError && !_isWebViewLoaded
-          ? const Center(
-              child: TextWidget(
-                text:
-                    'Failed to load the page. Please check your internet connection.',
-                fontsize: 16,
-              ),
-            )
-          : WebViewWidget(controller: _webViewController),
-             bottomNavigationBar: const Satoshinav(
+    return Scaffold(
+        backgroundColor: Colors.black,
+        body: SafeArea(
+          child: _isError && !_isWebViewLoaded
+              ? const Center(
+                  child: TextWidget(
+                    text:
+                        'Failed to load the page. Please check your internet connection.',
+                    fontsize: 16,
+                  ),
+                )
+              : Stack(
+                  children: [
+                    WebViewWidget(controller: _webViewController),
+                    (_isDataReady)
+                        ? const Center(
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                            ),
+                          )
+                        : Stack(),
+                  ],
+                ),
+        ),
+        bottomNavigationBar: const Satoshinav(
           number: 1,
-        ))
-    );
-            
+        ));
   }
 }

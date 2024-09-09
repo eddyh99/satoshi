@@ -323,16 +323,17 @@ class _SigninViewState extends State<SigninView> {
                                         .encode(_passwordTextController.text))
                                     .toString());
                             prefs.setString("id", result["message"]["id"]);
-                            // prefs.setString(
-                            //     "refcode", result["message"]["refcode"]);
-                            prefs.setString("id_referral",
-                                result["message"]["id_referral"]);
+                            if (result["message"]["id_referral"] == null) {
+                              prefs.setString("id_referral", "null");
+                            } else {
+                              prefs.setString("id_referral",
+                                  result["message"]["id_referral"]);
+                            }
                             prefs.setString("role", result["message"]["role"]);
                             prefs.setString(
                                 "timezone", result["message"]["timezone"]);
                             prefs.setString(
                                 "membership", result["message"]["membership"]);
-                            print("MASUK SUKSES");
                             Get.toNamed("/front-screen/home");
                             _signinFormKey.currentState?.reset();
                             _emailTextController.clear();
