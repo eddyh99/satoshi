@@ -10,46 +10,45 @@ class Satoshinav extends StatelessWidget {
   final number;
 
   @override
-  Widget build(BuildContext context) {   
-    log(number.toString()); 
+  Widget build(BuildContext context) {
+    log(number.toString());
     return ConvexAppBar(
         style: TabStyle.react,
         activeColor: const Color(0xFFB48B3D),
 
         // cornerRadius: 20,
         backgroundColor: const Color.fromRGBO(30, 30, 30, 1),
-        items:  [
+        items: [
           TabItem(
-              title: 'Home', icon:number == 0
-                ? const ImageIcon(
-                    AssetImage('assets/images/home.png'),
-                    color: Color(0xFFB48B3D) // Active color
-                  )
-                : const ImageIcon(
-                    AssetImage('assets/images/home.png'),
-                    color: Colors.white, // Inactive color
-                  )),
-           TabItem(
+              title: 'Home',
+              icon: number == 0
+                  ? const ImageIcon(AssetImage('assets/images/home.png'),
+                      color: Color(0xFFB48B3D) // Active color
+                      )
+                  : const ImageIcon(
+                      AssetImage('assets/images/home.png'),
+                      color: Colors.white, // Inactive color
+                    )),
+          TabItem(
               title: 'History',
               icon: number == 1
-                ? const ImageIcon(
-                    AssetImage('assets/images/history.png'),
-                    color: Color(0xFFB48B3D) // Active color
-                  )
-                : const ImageIcon(
-                    AssetImage('assets/images/history.png'),
-                    color: Colors.white, // Inactive color
-                  )),
+                  ? const ImageIcon(AssetImage('assets/images/history.png'),
+                      color: Color(0xFFB48B3D) // Active color
+                      )
+                  : const ImageIcon(
+                      AssetImage('assets/images/history.png'),
+                      color: Colors.white, // Inactive color
+                    )),
           TabItem(
-              title: 'Menu', icon: number == 2
-                ? const ImageIcon(
-                    AssetImage('assets/images/setting.png'),
-                    color: Color(0xFFB48B3D) // Active color
-                  )
-                : const ImageIcon(
-                    AssetImage('assets/images/setting.png'),
-                    color: Colors.white, // Inactive color
-                  )),
+              title: 'Menu',
+              icon: number == 2
+                  ? const ImageIcon(AssetImage('assets/images/setting.png'),
+                      color: Color(0xFFB48B3D) // Active color
+                      )
+                  : const ImageIcon(
+                      AssetImage('assets/images/setting.png'),
+                      color: Colors.white, // Inactive color
+                    )),
         ],
         initialActiveIndex: number,
         onTap: (int i) => {

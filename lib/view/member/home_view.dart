@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:satoshi/utils/extensions.dart';
 import 'package:satoshi/view/widget/bottomnav_widget.dart';
 import 'package:satoshi/view/widget/button_widget.dart';
 import 'package:satoshi/view/widget/text_widget.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 class HomeView extends StatefulWidget {
@@ -14,28 +14,35 @@ class HomeView extends StatefulWidget {
   }
 }
 
-// Future<void> _launchInWebViewOrVC(Uri url) async {
-//   if (!await launchUrl(url, mode: LaunchMode.inAppWebView)) {
-//     throw Exception('Could not launch $url');
-//   }
-// }
-
-class _HomeViewState extends State<HomeView>with WidgetsBindingObserver {
+class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
   late final WebViewController _webViewController;
   bool _isError = false;
   bool _isWebViewLoaded = false;
   bool _isInitialLoad = true;
+  bool _isDataReady = true;
   late final DateTime _loadStartTime;
-  static const Duration _initialLoadTimeout = Duration(seconds: 10);
+  static const Duration _initialLoadTimeout = Duration(seconds: 20);
+  dynamic email;
+  dynamic ref;
+
+  Future<dynamic> getPrefer() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    var getEmail = prefs.getString("email");
+    email = getEmail!;
+    var getRef = prefs.getString("refcode");
+    ref = getRef!;
+  }
 
   @override
   void initState() {
     super.initState();
+    getPrefer();
     WidgetsBinding.instance.addObserver(this);
 
     // Initialize WebView
     _webViewController = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..setBackgroundColor(const Color(0x00000000))
       ..setNavigationDelegate(
         NavigationDelegate(
           onPageStarted: (String url) {
@@ -55,8 +62,8 @@ class _HomeViewState extends State<HomeView>with WidgetsBindingObserver {
                   // Check if initial load timeout has passed
                   final duration = DateTime.now().difference(_loadStartTime);
                   if (duration < _initialLoadTimeout) {
-                    _isError =
-                        false; // Ensure initial load is considered successful if it completed
+                    _isError = false;
+                    _isDataReady = false;
                   } else if (_isError) {
                     _showErrorBottomSheet();
                   }
@@ -83,7 +90,8 @@ class _HomeViewState extends State<HomeView>with WidgetsBindingObserver {
           },
         ),
       )
-      ..loadRequest(Uri.parse('https://flutter.dev'));
+      ..loadRequest(
+          Uri.parse('https://pnglobalinternational.com/widget/signal'));
   }
 
   @override
@@ -160,23 +168,32 @@ class _HomeViewState extends State<HomeView>with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-        minimum: EdgeInsets.symmetric(horizontal: 3.w),
-        child: Scaffold(
-            backgroundColor: Colors.black,
-            body: _isError && !_isWebViewLoaded
-          ? const Center(
-              child: TextWidget(
-                text:
-                    'Failed to load the page. Please check your internet connection.',
-                fontsize: 16,
-              ),
-            )
-          : WebViewWidget(controller: _webViewController),
-             bottomNavigationBar: const Satoshinav(
+    return Scaffold(
+        backgroundColor: Colors.black,
+        body: SafeArea(
+          child: _isError && !_isWebViewLoaded
+              ? const Center(
+                  child: TextWidget(
+                    text:
+                        'Failed to load the page. Please check your internet connection.',
+                    fontsize: 16,
+                  ),
+                )
+              : Stack(
+                  children: [
+                    WebViewWidget(controller: _webViewController),
+                    (_isDataReady)
+                        ? const Center(
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                            ),
+                          )
+                        : Stack(),
+                  ],
+                ),
+        ),
+        bottomNavigationBar: const Satoshinav(
           number: 0,
-        ))
-    );
-            
+        ));
   }
 }
