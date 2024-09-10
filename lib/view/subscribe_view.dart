@@ -14,10 +14,10 @@ class SubscribeView extends StatefulWidget {
 
 class _SubscribeViewState extends State<SubscribeView> {
   late final WebViewController wvcontroller;
-  var idcabang = Get.arguments[0]["idcabang"];
+  // var idcabang = Get.arguments[0]["idcabang"];
   String token = "";
   int value = 0;
-  String totalorder = '';
+  String _status = 'pending';
   bool isDataReady = true;
 
   @override
@@ -38,9 +38,21 @@ class _SubscribeViewState extends State<SubscribeView> {
               isDataReady = false;
             });
           },
-          onWebResourceError: (WebResourceError error) {},
+          onWebResourceError: (WebResourceError error) {
+            // print(error);
+          },
         ),
+      )
+      ..addJavaScriptChannel(
+        'Total',
+        onMessageReceived: (JavaScriptMessage message) async {
+          setState(() {
+            _status = message.message;
+            print(_status);
+          });
+        },
       );
+
     wvcontroller.loadRequest(Uri.parse("$urlbase/widget/subscription"));
   }
 
@@ -54,24 +66,6 @@ class _SubscribeViewState extends State<SubscribeView> {
         body: SafeArea(
           child: WebViewWidget(controller: wvcontroller),
         ),
-        floatingActionButton: FloatingActionButton.extended(
-          onPressed: () {
-            Get.toNamed(
-              "/front-screen/allmenu",
-              arguments: [
-                {"idcabang": idcabang}
-              ],
-            );
-          },
-          icon: const Icon(Icons.restaurant_menu),
-          label: Text(
-            "All Menu",
-            style: TextStyle(fontSize: 18),
-          ),
-          backgroundColor: Color.fromRGBO(131, 173, 152, 1),
-          foregroundColor: Colors.white,
-        ),
-        floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       ),
     );
   }
