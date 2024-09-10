@@ -381,6 +381,18 @@ class _SigninViewState extends State<SigninView> {
                             Get.toNamed("/front-screen/register");
                           },
                       ),
+                      TextSpan(
+                        text: 'Subscribe',
+                        style: Theme.of(context)
+                            .textTheme
+                            .displayLarge
+                            ?.copyWith(
+                                fontSize: 12, fontWeight: FontWeight.bold),
+                        recognizer: TapGestureRecognizer()
+                          ..onTap = () {
+                            Get.toNamed("/front-screen/subscribe");
+                          },
+                      ),
                     ],
                   ),
                 ),
