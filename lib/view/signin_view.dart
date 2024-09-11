@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 
 import 'package:crypto/crypto.dart';
 import 'package:email_validator/email_validator.dart';
@@ -313,8 +314,9 @@ class _SigninViewState extends State<SigninView> {
                         var url = Uri.parse("$urlapi/auth/signin");
                         await satoshiAPI(url, jsonEncode(mdata)).then((ress) {
                           var result = jsonDecode(ress);
-                          // print(result);
-                          if (result['code'] == '200') {
+                          log(result.toString());
+                          
+                          if ((result['code'] == "200") && (result["message"]["role"]=="member")) {
                             prefs.setString("email", _emailTextController.text);
                             prefs.setString(
                                 "password",
@@ -323,6 +325,9 @@ class _SigninViewState extends State<SigninView> {
                                         .encode(_passwordTextController.text))
                                     .toString());
                             prefs.setString("id", result["message"]["id"]);
+                            prefs.setString("end_date",result["message"]["end_date"]);
+                            prefs.setString('period', result["message"]["period"]);
+                            prefs.setString('amount', result["message"]["amount"]);
                             if (result["message"]["id_referral"] == null) {
                               prefs.setString("id_referral", "null");
                             } else {
@@ -334,7 +339,11 @@ class _SigninViewState extends State<SigninView> {
                                 "timezone", result["message"]["timezone"]);
                             prefs.setString(
                                 "membership", result["message"]["membership"]);
-                            Get.toNamed("/front-screen/home");
+                            if (result["message"]["membership"]=="expired"){                              
+                              Get.toNamed("/front-screen/subscribe");
+                            }else{
+                              Get.toNamed("/front-screen/home");
+                            }
                             _signinFormKey.currentState?.reset();
                             _emailTextController.clear();
                             _passwordTextController.clear();
@@ -379,18 +388,6 @@ class _SigninViewState extends State<SigninView> {
                         recognizer: TapGestureRecognizer()
                           ..onTap = () {
                             Get.toNamed("/front-screen/register");
-                          },
-                      ),
-                      TextSpan(
-                        text: 'Subscribe',
-                        style: Theme.of(context)
-                            .textTheme
-                            .displayLarge
-                            ?.copyWith(
-                                fontSize: 12, fontWeight: FontWeight.bold),
-                        recognizer: TapGestureRecognizer()
-                          ..onTap = () {
-                            Get.toNamed("/front-screen/subscribe");
                           },
                       ),
                     ],

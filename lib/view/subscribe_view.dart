@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:satoshi/utils/globalvar.dart';
 import 'package:webview_flutter/webview_flutter.dart';
-import 'package:get/get.dart';
 
 class SubscribeView extends StatefulWidget {
   const SubscribeView({super.key});

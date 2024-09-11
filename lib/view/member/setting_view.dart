@@ -1,10 +1,12 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:satoshi/utils/extensions.dart';
 import 'package:satoshi/view/widget/bottomnav_widget.dart';
 import 'package:satoshi/view/widget/shimmer_widget.dart';
 import 'package:satoshi/view/widget/text_widget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
 class SettingView extends StatefulWidget {
@@ -26,9 +28,14 @@ class _SettingViewState extends State<SettingView> {
   dynamic email;
   dynamic idRef;
   bool _isLoading = true;
-
+  DateTime? currentDate;
+  DateTime? endDate;
+  Duration? difference;
+  int? period;
+  double? amount;
+  
   Future<void> _launchURL() async {
-    const url = 'https://google.com';
+    const url = 'https://www.pnglobalinternational.com/homepage/service?service=c2F0b3NoaV9zaWduYWw=';
     if (await canLaunchUrlString(url)) {
       await launchUrlString(url);
     } else {
@@ -38,11 +45,29 @@ class _SettingViewState extends State<SettingView> {
 
   Future<dynamic> getPrefer() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    var getEmail = prefs.getString("email");
-    email = getEmail!;
-    var getIdref = prefs.getString("id_referral");
-    idRef = getIdref!;
-    print(idRef);
+    // Retrieve email and id_referral
+    email = prefs.getString("email")!;
+    idRef = prefs.getString("id_referral")!;
+    String periodString = prefs.getString("period") ?? '0';  // Get the string or default to '0'
+    int periode = int.parse(periodString);  // Parse the string to an integer
+
+    period= periode ~/30;
+    
+    String amountString = prefs.getString("amount") ?? '0';  // Get the string or default to '0'
+    amount = double.parse(amountString);  // Parse the string to an integer
+    
+
+    // Parse endDate from the shared preferences
+    String? endDateString = prefs.getString("end_date");
+    if (endDateString != null) {
+      endDate = DateTime.parse(endDateString);
+    }
+
+    // Get the current date and calculate the difference
+    currentDate = DateTime.now();
+    if (endDate != null && currentDate != null) {
+      difference = endDate!.difference(currentDate!);
+    }
     setState(() {
       _isLoading = false;
     });
@@ -107,15 +132,15 @@ class _SettingViewState extends State<SettingView> {
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(color: Colors.amber),
                           ),
-                          child: const Row(
+                          child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               TextWidget(
-                                text: "1 Month (€100)",
+                                text: "$period Month (€ $amount)",
                                 fontsize: 16,
                               ),
                               TextWidget(
-                                text: "3 days remaining",
+                                text: "${difference?.inDays} days remaining",
                                 fontsize: 16,
                               ),
                             ],
@@ -187,7 +212,33 @@ class _SettingViewState extends State<SettingView> {
                               ],
                             ),
                           ),
-                        )
+                        ),
+                        const SizedBox(height: 8),
+                        GestureDetector(
+                          onTap: () async {
+                            SharedPreferences preferences = await SharedPreferences.getInstance();
+                            await preferences.clear();
+                            Get.toNamed("/front-screen/login");                            
+                          },
+                          child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 12, horizontal: 16),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: Colors.amber),
+                          ),
+                          child: const Row(
+                                children: [
+                                  Icon(Icons.logout,
+                                      color: Colors.white, size: 24),
+                                  SizedBox(width: 8),
+                                  TextWidget(
+                                    text: 'Logout',
+                                    fontsize: 16,
+                                  ),
+                            ],
+                          ),
+                        )),
                       ],
                     ),
                   )

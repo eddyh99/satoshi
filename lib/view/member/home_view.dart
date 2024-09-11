@@ -29,8 +29,6 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     var getEmail = prefs.getString("email");
     email = getEmail!;
-    var getRef = prefs.getString("refcode");
-    ref = getRef!;
   }
 
   @override
