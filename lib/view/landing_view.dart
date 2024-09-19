@@ -35,6 +35,20 @@ class _LandingViewState extends State<LandingView> {
 
         if ((result['code'] == "200") &&
             (result["message"]["role"] == "member")) {
+          prefs.setString("id", result["message"]["id"]);
+          prefs.setString("end_date", result["message"]["end_date"]);
+          prefs.setString('period', result["message"]["period"]);
+          prefs.setString('amount', result["message"]["amount"]);
+          prefs.setString('devicetoken', result["message"]["devicetoken"]);
+          prefs.setString('selected_language', "en");
+          if (result["message"]["id_referral"] == null) {
+            prefs.setString("id_referral", "null");
+          } else {
+            prefs.setString("id_referral", result["message"]["id_referral"]);
+          }
+          prefs.setString("role", result["message"]["role"]);
+          prefs.setString("timezone", result["message"]["timezone"]);
+          prefs.setString("membership", result["message"]["membership"]);
           if (result["message"]["membership"] == "expired") {
             Get.toNamed("/front-screen/subscribe");
           } else {

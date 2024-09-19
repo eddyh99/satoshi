@@ -1,6 +1,10 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get/get.dart';
 import 'package:satoshi/utils/extensions.dart';
+import 'package:satoshi/utils/firebase_messaging_service.dart';
 import 'package:satoshi/view/widget/bottomnav_widget.dart';
 import 'package:satoshi/view/widget/shimmer_widget.dart';
 import 'package:satoshi/view/widget/text_widget.dart';
@@ -36,9 +40,14 @@ class _SettingViewState extends State<SettingView> {
   bool isVibrationEnabled = true;
   late String lang = "en";
 
-  Future<void> _launchURL() async {
-    const url =
-        'https://www.pnglobalinternational.com/homepage/service?service=c2F0b3NoaV9zaWduYWw=';
+  Future<void> _launchURL(tipe) async {
+    String url = "";
+    if (tipe == "howto") {
+      url =
+          'https://www.pnglobalinternational.com/homepage/service?service=c2F0b3NoaV9zaWduYWw=';
+    } else if (tipe == "delete") {
+      url = 'https://www.pnglobalinternational.com/homepage/account_deletion';
+    }
     if (await canLaunchUrlString(url)) {
       await launchUrlString(url);
     } else {
@@ -93,8 +102,11 @@ class _SettingViewState extends State<SettingView> {
 
   void _savePreferences() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.setBool('sound', isSoundEnabled);
-    prefs.setBool('vibration', isVibrationEnabled);
+    await prefs.setBool('sound', isSoundEnabled);
+    await prefs.setBool('vibration', isVibrationEnabled);
+
+    // Reinitialize the notification system to pick up updated preferences
+    FirebaseMessagingService().initializeLocalNotifications();
   }
 
   @override
@@ -206,7 +218,10 @@ class _SettingViewState extends State<SettingView> {
                         ),
                         const SizedBox(height: 8),
                         GestureDetector(
-                          onTap: _launchURL,
+                          onTap: () {
+                            _launchURL(
+                                'howto'); // Call the async function without awaiting it directly here
+                          },
                           child: Container(
                             padding: const EdgeInsets.symmetric(
                                 vertical: 12, horizontal: 16),
@@ -290,7 +305,8 @@ class _SettingViewState extends State<SettingView> {
                           icon: Icons.delete_forever,
                           text: 'Delete Account',
                           onTap: () {
-                            // Handle account deletion logic
+                            _launchURL(
+                                'delete'); // Call the async function without awaiting it directly here
                           },
                         ),
                       ],

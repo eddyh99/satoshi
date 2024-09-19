@@ -30,12 +30,11 @@ void main() async {
   // Initialize Firebase (for Android/iOS)
   await Firebase.initializeApp(
     options: const FirebaseOptions(
-      apiKey: 'AIzaSyDb3qJmaBk2Q2tK3sUeQWPZAfCnFORLLtM', // From "current_key"
-      appId:
-          '1:167593974745:android:71382cf6fa39b97507d7c8', // From "mobilesdk_app_id"
-      messagingSenderId: '167593974745', // From "project_number"
-      projectId: 'satoshi-signal', // From "project_id"
-      storageBucket: 'satoshi-signal.appspot.com', // From "storage_bucket"
+      apiKey: 'AIzaSyDb3qJmaBk2Q2tK3sUeQWPZAfCnFORLLtM',
+      appId: '1:167593974745:android:71382cf6fa39b97507d7c8',
+      messagingSenderId: '167593974745',
+      projectId: 'satoshi-signal',
+      storageBucket: 'satoshi-signal.appspot.com',
     ),
   );
 
@@ -45,16 +44,12 @@ void main() async {
   // Background messaging handler setup
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
-  // Initialize Firebase Messaging Service
-  FirebaseMessagingService().initialize();
-
   // Run the app
   runApp(const MyApp());
 }
 
 // Background message handler
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  await Firebase.initializeApp(); // Ensure Firebase is initialized
   log("Handling a background message: ${message.messageId}");
 }
 

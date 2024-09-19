@@ -35,9 +35,16 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
 
   Future<dynamic> getPrefer() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? email = prefs.getString("email");
     String? getToken = prefs.getString("devicetoken");
-    lang = prefs.getString('selected_language') ?? 'en';
+    final isSoundEnabled = prefs.getBool('sound') ?? true; // default to true
+    final isVibrationEnabled =
+        prefs.getBool('vibration') ?? true; // default to true
+    log(isSoundEnabled.toString());
+    log(isVibrationEnabled.toString());
 
+    lang = prefs.getString('selected_language') ?? 'en';
+    log("100-${getToken!}");
     if (getToken == "") {
       FirebaseMessaging.instance.subscribeToTopic('signal').then((_) {
         log("Successfully subscribed to topic 'signal'");
@@ -67,6 +74,7 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
       _controller = WebViewController()
         ..setJavaScriptMode(JavaScriptMode.unrestricted)
         ..clearCache()
+        ..enableZoom(false)
         ..setNavigationDelegate(
           NavigationDelegate(
             onPageStarted: (String url) {

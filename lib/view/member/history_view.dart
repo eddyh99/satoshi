@@ -44,6 +44,7 @@ class _HistoryViewState extends State<HistoryView> with WidgetsBindingObserver {
       _webViewController = WebViewController()
         ..setJavaScriptMode(JavaScriptMode.unrestricted)
         ..clearCache()
+        ..enableZoom(false)
         ..setNavigationDelegate(
           NavigationDelegate(
             onPageStarted: (String url) {
