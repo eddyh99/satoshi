@@ -42,7 +42,7 @@ class _RegisterViewState extends State<RegisterView> {
   @override
   void initState() {
     super.initState();
-     _getIPAddress(); 
+    _getIPAddress();
   }
 
   @override
@@ -58,7 +58,6 @@ class _RegisterViewState extends State<RegisterView> {
 
   late String _password;
   double _strength = 0;
-  dynamic _zone = 'hello';
 
   RegExp numReg = RegExp(r".*[0-9].*");
   RegExp letterReg = RegExp(r".*[A-Za-z].*");
@@ -133,23 +132,21 @@ class _RegisterViewState extends State<RegisterView> {
                 children: [
                   Align(
                       alignment: Alignment.centerLeft,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const TextWidget(
-                            text: "REGISTER",
-                            fontsize: 32,
-                          ),
-                          const TextWidget(
-                            text: "Please register to continue",
-                            fontsize: 16,
-                          ),
-                          TextWidget(
-                            text: _zone,
-                            fontsize: 16,
-                          )
-                        ],
-                      )),
+                      child: Padding(
+                          padding: EdgeInsets.only(left: 6.w),
+                          child: const Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              TextWidget(
+                                text: "REGISTER",
+                                fontsize: 32,
+                              ),
+                              TextWidget(
+                                text: "Please register to continue",
+                                fontsize: 16,
+                              ),
+                            ],
+                          ))),
                   SizedBox(
                     height: 5.h,
                   ),
@@ -538,7 +535,7 @@ class _RegisterViewState extends State<RegisterView> {
                                         }
                                         if (_signupFormKey.currentState!
                                             .validate()) {
-                                                   log("100-$_ipAddress");
+                                          log("100-$_ipAddress");
 
                                           Map<String, dynamic> mdata;
                                           mdata = {
@@ -559,7 +556,7 @@ class _RegisterViewState extends State<RegisterView> {
                                           await satoshiAPI(
                                                   url, jsonEncode(mdata))
                                               .then((ress) {
-                                              var result = jsonDecode(ress);
+                                            var result = jsonDecode(ress);
                                             if (result['code'] == '201') {
                                               dynamic email =
                                                   _emailTextController.text;
@@ -653,10 +650,12 @@ class _RegisterViewState extends State<RegisterView> {
       ),
     );
   }
+
   Future<void> _getIPAddress() async {
     try {
       // Call the IPify API to get the IP address
-      final response = await http.get(Uri.parse('https://api.ipify.org?format=json'));
+      final response =
+          await http.get(Uri.parse('https://api.ipify.org?format=json'));
 
       if (response.statusCode == 200) {
         // Parse the JSON response

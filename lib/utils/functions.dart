@@ -38,7 +38,7 @@ int randomNumber() {
 Future<String> satoshiAPI(Uri url, String body) async {
   final prefs = await SharedPreferences.getInstance();
   var email = prefs.getString("email");
-  var passwd = prefs.getString("passwd");
+  var passwd = prefs.getString("password");
 
   String token = '';
   var headers = {'Content-Type': 'application/json'};

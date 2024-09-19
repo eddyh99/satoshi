@@ -1,8 +1,14 @@
+import 'dart:convert';
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:satoshi/utils/extensions.dart';
+import 'package:satoshi/utils/functions.dart';
+import 'package:satoshi/utils/globalvar.dart';
 import 'package:satoshi/view/widget/button_widget.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LandingView extends StatefulWidget {
   const LandingView({super.key});
@@ -14,9 +20,45 @@ class LandingView extends StatefulWidget {
 }
 
 class _LandingViewState extends State<LandingView> {
+  Future<dynamic> getPrefer() async {
+    final navigator = Navigator.of(context);
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? getEmail = prefs.getString("email");
+    String? password = prefs.getString("password");
+    if (getEmail != null) {
+      Map<String, dynamic> mdata;
+      mdata = {'email': getEmail, 'password': password};
+      var url = Uri.parse("$urlapi/auth/signin");
+      await satoshiAPI(url, jsonEncode(mdata)).then((ress) {
+        var result = jsonDecode(ress);
+        log(result.toString());
+
+        if ((result['code'] == "200") &&
+            (result["message"]["role"] == "member")) {
+          if (result["message"]["membership"] == "expired") {
+            Get.toNamed("/front-screen/subscribe");
+          } else {
+            Get.toNamed("/front-screen/home");
+          }
+        } else {
+          var psnerr = result['message'];
+          navigator.pop();
+          showAlert(psnerr, context);
+        }
+      }).catchError((err) {
+        navigator.pop();
+        showAlert(
+          "Something Wrong, Please Contact Administrator",
+          context,
+        );
+      });
+    }
+  }
+
   @override
   void initState() {
     super.initState();
+    getPrefer();
   }
 
   @override

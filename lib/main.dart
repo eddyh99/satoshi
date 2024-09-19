@@ -1,10 +1,18 @@
+import 'dart:developer';
+
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:satoshi/utils/firebase_messaging_service.dart';
 import 'package:satoshi/view/landing_view.dart';
 import 'package:satoshi/view/member/history_view.dart';
 import 'package:satoshi/view/member/home_view.dart';
+import 'package:satoshi/view/member/language_view.dart';
+import 'package:satoshi/view/member/message_view.dart';
 import 'package:satoshi/view/member/setting_view.dart';
 import 'package:satoshi/view/register_view.dart';
 import 'package:satoshi/view/signin_view.dart';
@@ -13,10 +21,41 @@ import 'package:satoshi/view/subscribe_view.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Lock orientation to portrait mode
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
   ]);
+
+  // Initialize Firebase (for Android/iOS)
+  await Firebase.initializeApp(
+    options: const FirebaseOptions(
+      apiKey: 'AIzaSyDb3qJmaBk2Q2tK3sUeQWPZAfCnFORLLtM', // From "current_key"
+      appId:
+          '1:167593974745:android:71382cf6fa39b97507d7c8', // From "mobilesdk_app_id"
+      messagingSenderId: '167593974745', // From "project_number"
+      projectId: 'satoshi-signal', // From "project_id"
+      storageBucket: 'satoshi-signal.appspot.com', // From "storage_bucket"
+    ),
+  );
+
+  // Initialize Firebase Analytics
+  FirebaseAnalytics analytics = FirebaseAnalytics.instance;
+
+  // Background messaging handler setup
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+
+  // Initialize Firebase Messaging Service
+  FirebaseMessagingService().initialize();
+
+  // Run the app
   runApp(const MyApp());
+}
+
+// Background message handler
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  await Firebase.initializeApp(); // Ensure Firebase is initialized
+  log("Handling a background message: ${message.messageId}");
 }
 
 class NoGlowScrollBehavior extends MaterialScrollBehavior {
@@ -30,7 +69,6 @@ class NoGlowScrollBehavior extends MaterialScrollBehavior {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(
@@ -77,9 +115,17 @@ class MyApp extends StatelessWidget {
               page: () => const HistoryView(),
               transition: Transition.fadeIn),
           GetPage(
+              name: '/front-screen/message',
+              page: () => const MessageView(),
+              transition: Transition.fadeIn),
+          GetPage(
               name: '/front-screen/setting',
               page: () => const SettingView(),
-              transition: Transition.fadeIn)
+              transition: Transition.fadeIn),
+          GetPage(
+              name: '/front-screen/language',
+              page: () => const LanguageView(),
+              transition: Transition.fadeIn),
         ]);
   }
 }
@@ -95,6 +141,9 @@ class _MainAppState extends State<MainApp> {
   @override
   void initState() {
     super.initState();
+
+    FirebaseMessagingService().initialize();
+
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       Future.delayed(const Duration(seconds: 3), () {
         Get.offNamed('/front-screen/landing');

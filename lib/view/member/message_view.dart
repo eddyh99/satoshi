@@ -5,12 +5,12 @@ import 'package:satoshi/view/widget/text_widget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
-class HistoryView extends StatefulWidget {
-  const HistoryView({super.key});
+class MessageView extends StatefulWidget {
+  const MessageView({super.key});
 
   @override
-  State<HistoryView> createState() {
-    return _HistoryViewState();
+  State<MessageView> createState() {
+    return _MessageViewState();
   }
 }
 
@@ -20,7 +20,7 @@ class HistoryView extends StatefulWidget {
 //   }
 // }
 
-class _HistoryViewState extends State<HistoryView> with WidgetsBindingObserver {
+class _MessageViewState extends State<MessageView> with WidgetsBindingObserver {
   WebViewController? _webViewController;
   late String lang = "en";
   String urltranslated = "";
@@ -37,7 +37,7 @@ class _HistoryViewState extends State<HistoryView> with WidgetsBindingObserver {
 
     // Update the URL after getting preferences
     urltranslated =
-        "https://translate.google.com/translate?sl=auto&tl=$lang&hl=en&u=https://pnglobalinternational.com/widget/signal/history";
+        "https://translate.google.com/translate?sl=auto&tl=$lang&hl=en&u=https://pnglobalinternational.com/widget/history";
 
     // Initialize the WebViewController after lang is updated
     setState(() {
@@ -120,7 +120,6 @@ class _HistoryViewState extends State<HistoryView> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     getPrefer(); // Fetch preferences before initializing the WebView
-
     WidgetsBinding.instance.addObserver(this);
   }
 
@@ -227,7 +226,7 @@ class _HistoryViewState extends State<HistoryView> with WidgetsBindingObserver {
                 ),
         ),
         bottomNavigationBar: const Satoshinav(
-          number: 1,
+          number: 3,
         ));
   }
 }

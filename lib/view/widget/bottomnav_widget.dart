@@ -20,13 +20,13 @@ class Satoshinav extends StatelessWidget {
         backgroundColor: const Color.fromRGBO(30, 30, 30, 1),
         items: [
           TabItem(
-              title: 'Home',
+              title: 'Signal',
               icon: number == 0
-                  ? const ImageIcon(AssetImage('assets/images/home.png'),
+                  ? const ImageIcon(AssetImage('assets/images/signal.png'),
                       color: Color(0xFFB48B3D) // Active color
                       )
                   : const ImageIcon(
-                      AssetImage('assets/images/home.png'),
+                      AssetImage('assets/images/signal.png'),
                       color: Colors.white, // Inactive color
                     )),
           TabItem(
@@ -40,7 +40,17 @@ class Satoshinav extends StatelessWidget {
                       color: Colors.white, // Inactive color
                     )),
           TabItem(
-              title: 'Menu',
+              title: 'Message',
+              icon: number == 2
+                  ? const ImageIcon(AssetImage('assets/images/message.png'),
+                      color: Color(0xFFB48B3D) // Active color
+                      )
+                  : const ImageIcon(
+                      AssetImage('assets/images/message.png'),
+                      color: Colors.white, // Inactive color
+                    )),
+          TabItem(
+              title: 'Settings',
               icon: number == 2
                   ? const ImageIcon(AssetImage('assets/images/setting.png'),
                       color: Color(0xFFB48B3D) // Active color
@@ -57,7 +67,10 @@ class Satoshinav extends StatelessWidget {
               else if (i == 1)
                 {Get.toNamed("/front-screen/history")}
               else if (i == 2)
+                {Get.toNamed("/front-screen/message")}
+              else if (i == 3)
                 {Get.toNamed("/front-screen/setting")}
+
             });
   }
 }

@@ -74,20 +74,23 @@ class _SigninViewState extends State<SigninView> {
             child: Form(
               key: _signinFormKey,
               child: Column(children: [
-                const Align(
+                Align(
                   alignment: Alignment.centerLeft,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      TextWidget(
-                        text: "LOGIN",
-                        fontsize: 32,
-                      ),
-                      TextWidget(
-                        text: "Please login to continue",
-                        fontsize: 16,
-                      )
-                    ],
+                  child: Padding(
+                    padding: EdgeInsets.only(left: 6.w),
+                    child: const Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        TextWidget(
+                          text: "LOGIN",
+                          fontsize: 32,
+                        ),
+                        TextWidget(
+                          text: "Please login to continue",
+                          fontsize: 16,
+                        )
+                      ],
+                    ),
                   ),
                 ),
                 SizedBox(
@@ -315,8 +318,9 @@ class _SigninViewState extends State<SigninView> {
                         await satoshiAPI(url, jsonEncode(mdata)).then((ress) {
                           var result = jsonDecode(ress);
                           log(result.toString());
-                          
-                          if ((result['code'] == "200") && (result["message"]["role"]=="member")) {
+
+                          if ((result['code'] == "200") &&
+                              (result["message"]["role"] == "member")) {
                             prefs.setString("email", _emailTextController.text);
                             prefs.setString(
                                 "password",
@@ -325,9 +329,15 @@ class _SigninViewState extends State<SigninView> {
                                         .encode(_passwordTextController.text))
                                     .toString());
                             prefs.setString("id", result["message"]["id"]);
-                            prefs.setString("end_date",result["message"]["end_date"]);
-                            prefs.setString('period', result["message"]["period"]);
-                            prefs.setString('amount', result["message"]["amount"]);
+                            prefs.setString(
+                                "end_date", result["message"]["end_date"]);
+                            prefs.setString(
+                                'period', result["message"]["period"]);
+                            prefs.setString(
+                                'amount', result["message"]["amount"]);
+                            prefs.setString('devicetoken',
+                                result["message"]["devicetoken"]);
+                            prefs.setString('selected_language', "en");
                             if (result["message"]["id_referral"] == null) {
                               prefs.setString("id_referral", "null");
                             } else {
@@ -339,9 +349,9 @@ class _SigninViewState extends State<SigninView> {
                                 "timezone", result["message"]["timezone"]);
                             prefs.setString(
                                 "membership", result["message"]["membership"]);
-                            if (result["message"]["membership"]=="expired"){                              
+                            if (result["message"]["membership"] == "expired") {
                               Get.toNamed("/front-screen/subscribe");
-                            }else{
+                            } else {
                               Get.toNamed("/front-screen/home");
                             }
                             _signinFormKey.currentState?.reset();

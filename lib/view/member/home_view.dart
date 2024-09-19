@@ -1,4 +1,10 @@
+import 'dart:convert';
+import 'dart:developer';
+
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:satoshi/utils/functions.dart';
+import 'package:satoshi/utils/globalvar.dart';
 import 'package:satoshi/view/widget/bottomnav_widget.dart';
 import 'package:satoshi/view/widget/button_widget.dart';
 import 'package:satoshi/view/widget/text_widget.dart';
@@ -15,7 +21,9 @@ class HomeView extends StatefulWidget {
 }
 
 class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
-  late final WebViewController _webViewController;
+  WebViewController? _controller;
+  late String lang = "en";
+  String urltranslated = "";
   bool _isError = false;
   bool _isWebViewLoaded = false;
   bool _isInitialLoad = true;
@@ -27,69 +35,119 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
 
   Future<dynamic> getPrefer() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    var getEmail = prefs.getString("email");
-    email = getEmail!;
+    String? getToken = prefs.getString("devicetoken");
+    lang = prefs.getString('selected_language') ?? 'en';
+
+    if (getToken == "") {
+      FirebaseMessaging.instance.subscribeToTopic('signal').then((_) {
+        log("Successfully subscribed to topic 'signal'");
+      }).catchError((error) {
+        log("Error subscribing to topic 'signal': $error");
+      });
+
+      String? fcmToken = await FirebaseMessaging.instance.getToken();
+      log("100-$fcmToken");
+      if (fcmToken != null) {
+        Map<String, dynamic> mdata;
+        mdata = {'email': email, 'devicetoken': fcmToken};
+        var url = Uri.parse("$urlapi/v1/member/add_device");
+        await satoshiAPI(url, jsonEncode(mdata));
+        prefs.setString("devicetoken", fcmToken);
+      }
+    }
+
+    // Update the URL after getting preferences
+    urltranslated =
+        "https://translate.google.com/translate?sl=auto&tl=$lang&hl=en&u=https://pnglobalinternational.com/widget/signal";
+    log(urltranslated);
+    log(lang);
+
+    // Initialize the WebViewController after lang is updated
+    setState(() {
+      _controller = WebViewController()
+        ..setJavaScriptMode(JavaScriptMode.unrestricted)
+        ..clearCache()
+        ..setNavigationDelegate(
+          NavigationDelegate(
+            onPageStarted: (String url) {
+              _controller!.runJavaScript('''
+                (function() {
+                  var style = document.createElement('style');
+                  style.innerHTML = '.goog-te-banner-frame, #gt-nvframe { display: none !important; }';
+                  document.head.appendChild(style);
+                })();
+              ''');
+              _loadStartTime = DateTime.now();
+              if (mounted) {
+                setState(() {
+                  _isError = false; // Reset error state on new page load
+                });
+              }
+            },
+            onPageFinished: (url) {
+              // Log the current URL and lang to ensure translation is correct
+              log('Current URL: $url');
+              log('Language Code (lang): $lang'); // Ensure this logs 'es' or any other valid language code
+
+              //Inject JavaScript to hide the toolbar inside the iframe with ID 'gt-nvframe'
+              _controller!.runJavaScript('''
+                (function() {
+                  var translateBar = document.querySelector('.goog-te-banner-frame');
+                  if (translateBar) {
+                    translateBar.style.display = 'none';
+                  }
+
+                  var iframe = document.getElementById('gt-nvframe');
+                  if (iframe) {
+                    iframe.style.display = 'none'; // Hide iframe if found
+                  }
+                  document.body.style.top = '0px'; // Adjust body top to avoid gap
+                })();
+              ''');
+
+              if (mounted) {
+                setState(() {
+                  _isWebViewLoaded = true;
+                  if (_isInitialLoad) {
+                    _isInitialLoad = false;
+                    final duration = DateTime.now().difference(_loadStartTime);
+                    if (duration < _initialLoadTimeout) {
+                      _isError = false;
+                      _isDataReady = false;
+                    } else if (_isError) {
+                      _showErrorBottomSheet();
+                    }
+                  }
+                });
+              }
+            },
+            onWebResourceError: (error) {
+              if (mounted) {
+                setState(() {
+                  if (_isWebViewLoaded) {
+                    final duration = DateTime.now().difference(_loadStartTime);
+                    if (duration < _initialLoadTimeout) {
+                      _isError =
+                          false; // Ensure initial load is considered successful if it completed
+                    } else {
+                      _isError = true;
+                      _showErrorBottomSheet();
+                    }
+                  }
+                });
+              }
+            },
+          ),
+        )
+        ..loadRequest(Uri.parse(urltranslated));
+    });
   }
 
   @override
   void initState() {
     super.initState();
-    getPrefer();
+    getPrefer(); // Fetch preferences before initializing the WebView
     WidgetsBinding.instance.addObserver(this);
-
-    // Initialize WebView
-    _webViewController = WebViewController()
-      ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setBackgroundColor(const Color(0x00000000))
-      ..setNavigationDelegate(
-        NavigationDelegate(
-          onPageStarted: (String url) {
-            _loadStartTime = DateTime.now();
-            if (mounted) {
-              setState(() {
-                _isError = false; // Reset error state on new page load
-              });
-            }
-          },
-          onPageFinished: (String url) {
-            if (mounted) {
-              setState(() {
-                _isWebViewLoaded = true;
-                if (_isInitialLoad) {
-                  _isInitialLoad = false;
-                  // Check if initial load timeout has passed
-                  final duration = DateTime.now().difference(_loadStartTime);
-                  if (duration < _initialLoadTimeout) {
-                    _isError = false;
-                    _isDataReady = false;
-                  } else if (_isError) {
-                    _showErrorBottomSheet();
-                  }
-                }
-              });
-            }
-          },
-          onWebResourceError: (error) {
-            if (mounted) {
-              setState(() {
-                if (_isWebViewLoaded) {
-                  // Show error only if WebView has finished loading
-                  final duration = DateTime.now().difference(_loadStartTime);
-                  if (duration < _initialLoadTimeout) {
-                    _isError =
-                        false; // Ensure initial load is considered successful if it completed
-                  } else {
-                    _isError = true;
-                    _showErrorBottomSheet();
-                  }
-                }
-              });
-            }
-          },
-        ),
-      )
-      ..loadRequest(
-          Uri.parse('https://pnglobalinternational.com/widget/signal'));
   }
 
   @override
@@ -102,12 +160,12 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.paused) {
       if (mounted) {
-        _webViewController
+        _controller!
             .runJavaScript("document.body.style.visibility = 'hidden';");
       }
     } else if (state == AppLifecycleState.resumed) {
       if (mounted) {
-        _webViewController
+        _controller!
             .runJavaScript("document.body.style.visibility = 'visible';");
       }
     }
@@ -141,7 +199,7 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
                     onTap: () {
                       Navigator.pop(context); // Close the BottomSheet
                       if (mounted) {
-                        _webViewController.reload(); // Retry loading the page
+                        _controller!.reload(); // Retry loading the page
                         setState(() {
                           _isError = false;
                           _isWebViewLoaded = false; // Reset the loaded state
@@ -179,14 +237,18 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
                 )
               : Stack(
                   children: [
-                    WebViewWidget(controller: _webViewController),
+                    _controller == null
+                        ? const Center(
+                            child:
+                                CircularProgressIndicator()) // Show a loading indicator while _controller is null
+                        : WebViewWidget(controller: _controller!),
                     (_isDataReady)
                         ? const Center(
                             child: CircularProgressIndicator(
                               color: Colors.white,
                             ),
                           )
-                        : Stack(),
+                        : Container(),
                   ],
                 ),
         ),
