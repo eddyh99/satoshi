@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:satoshi/utils/globalvar.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+import 'package:get/get.dart';
 
 class SubscribeView extends StatefulWidget {
   const SubscribeView({super.key});
@@ -48,7 +49,6 @@ class _SubscribeViewState extends State<SubscribeView> {
         onMessageReceived: (JavaScriptMessage message) async {
           setState(() {
             _status = message.message;
-            print(_status);
           });
         },
       );
@@ -66,6 +66,23 @@ class _SubscribeViewState extends State<SubscribeView> {
         body: SafeArea(
           child: WebViewWidget(controller: wvcontroller),
         ),
+        floatingActionButton: (_status == 'success')
+            ? FloatingActionButton.extended(
+                onPressed: () {
+                  Get.toNamed(
+                    "/front-screen/login",
+                  );
+                },
+                icon: const Icon(Icons.login_outlined),
+                label: Text(
+                  "Re Login",
+                  style: TextStyle(fontSize: 18),
+                ),
+                backgroundColor: const Color(0xFFBFA573),
+                foregroundColor: Colors.black,
+              )
+            : SizedBox.shrink(),
+        floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       ),
     );
   }

@@ -37,7 +37,7 @@ class _MessageViewState extends State<MessageView> with WidgetsBindingObserver {
 
     // Update the URL after getting preferences
     urltranslated =
-        "https://translate.google.com/translate?sl=auto&tl=$lang&hl=en&u=https://pnglobalinternational.com/widget/signal/message";
+        "https://translate.google.com/translate?sl=auto&tl=$lang&hl=en&u=https://pnglobalinternational.com/widget/message";
 
     // Initialize the WebViewController after lang is updated
     setState(() {
