@@ -43,6 +43,7 @@ class _MessageViewState extends State<MessageView> with WidgetsBindingObserver {
     setState(() {
       _webViewController = WebViewController()
         ..setJavaScriptMode(JavaScriptMode.unrestricted)
+        ..setBackgroundColor(const Color(0x00000000))
         ..clearCache()
         ..enableZoom(false)
         ..setNavigationDelegate(
@@ -227,7 +228,7 @@ class _MessageViewState extends State<MessageView> with WidgetsBindingObserver {
                 ),
         ),
         bottomNavigationBar: const Satoshinav(
-          number: 3,
+          number: 2,
         ));
   }
 }

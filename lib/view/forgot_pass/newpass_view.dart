@@ -1,9 +1,5 @@
 import 'dart:convert';
-import 'dart:developer';
-
 import 'package:crypto/crypto.dart';
-import 'package:email_validator/email_validator.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:satoshi/utils/extensions.dart';
@@ -11,20 +7,19 @@ import 'package:satoshi/utils/functions.dart';
 import 'package:satoshi/utils/globalvar.dart';
 import 'package:satoshi/view/widget/button_widget.dart';
 import 'package:satoshi/view/widget/text_widget.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
-class SigninView extends StatefulWidget {
-  const SigninView({super.key});
+class NewpassView extends StatefulWidget {
+  const NewpassView({super.key});
 
   @override
-  State<SigninView> createState() {
-    return _SigninViewState();
+  State<NewpassView> createState() {
+    return _NewpassViewState();
   }
 }
 
-class _SigninViewState extends State<SigninView> {
-  final GlobalKey<FormState> _signinFormKey = GlobalKey<FormState>();
-  final TextEditingController _emailTextController = TextEditingController();
+class _NewpassViewState extends State<NewpassView> {
+  final GlobalKey<FormState> _newpassFormKey = GlobalKey<FormState>();
+  final TextEditingController _tokenTextController = TextEditingController();
   final TextEditingController _passwordTextController = TextEditingController();
 
   bool _passwordVisible = false;
@@ -41,27 +36,6 @@ class _SigninViewState extends State<SigninView> {
     super.dispose();
   }
 
-  String? validateEmail(String? email) {
-    dynamic isValid = EmailValidator.validate('$email');
-
-    // Navigator.pop(context);
-    if (email == null || email.isEmpty) {
-      setState(() {
-        _emailerror = true;
-      });
-      return "Please enter your email";
-    }
-
-    if (!isValid) {
-      setState(() {
-        _emailerror = true;
-      });
-      return "Please enter a valid email";
-    }
-
-    return null;
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -72,7 +46,7 @@ class _SigninViewState extends State<SigninView> {
             child: Padding(
               padding: EdgeInsets.symmetric(vertical: 5.h),
               child: Form(
-                key: _signinFormKey,
+                key: _newpassFormKey,
                 child: Column(children: [
                   Align(
                     alignment: Alignment.centerLeft,
@@ -82,11 +56,12 @@ class _SigninViewState extends State<SigninView> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           TextWidget(
-                            text: "LOGIN",
+                            text: "Forgot Password",
                             fontsize: 32,
                           ),
                           TextWidget(
-                            text: "Please login to continue",
+                            text:
+                                "Please check your email to know your reset password token, and insert your token below",
                             fontsize: 16,
                           )
                         ],
@@ -98,7 +73,7 @@ class _SigninViewState extends State<SigninView> {
                   ),
                   Container(
                     width: 100.w,
-                    height: (_haserror) ? 38.h : 35.h,
+                    height: (_haserror) ? 38.h : 30.h,
                     decoration: BoxDecoration(
                       color: const Color(0x4ACCB78F), // Background color
                       borderRadius:
@@ -115,16 +90,16 @@ class _SigninViewState extends State<SigninView> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               const TextWidget(
-                                text: "Email Address",
+                                text: "Token",
                                 fontsize: 12,
                               ),
-                              SizedBox(height: 0.5.h),
+                              SizedBox(height: 1.h),
                               SizedBox(
                                 height: (_emailerror) ? 10.h : 6.h,
                                 child: TextFormField(
                                   style: const TextStyle(
                                       color: Colors.white, fontSize: 12),
-                                  controller: _emailTextController,
+                                  controller: _tokenTextController,
                                   maxLines: 1,
                                   keyboardType: TextInputType.text,
                                   decoration: InputDecoration(
@@ -175,14 +150,11 @@ class _SigninViewState extends State<SigninView> {
                                             Color.fromRGBO(163, 163, 163, 1)),
                                     hintText: 'Enter your email address',
                                   ),
-                                  validator: validateEmail,
                                 ),
                               ),
-                              SizedBox(
-                                height: 2.h,
-                              ),
+                              SizedBox(height: 3.h),
                               const TextWidget(
-                                text: "Password",
+                                text: "New Password",
                                 fontsize: 12,
                               ),
                               SizedBox(height: 1.h),
@@ -261,37 +233,7 @@ class _SigninViewState extends State<SigninView> {
                                 ),
                               ),
                               SizedBox(
-                                height: 1.h,
-                              ),
-                              Align(
-                                alignment: Alignment.centerRight,
-                                child: RichText(
-                                  text: TextSpan(
-                                    children: [
-                                      TextSpan(
-                                        text: "Forgot password? ",
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .displayLarge
-                                            ?.copyWith(fontSize: 12),
-                                      ),
-                                      TextSpan(
-                                        text: 'Reset',
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .displayLarge
-                                            ?.copyWith(
-                                                fontSize: 12,
-                                                fontWeight: FontWeight.bold),
-                                        recognizer: TapGestureRecognizer()
-                                          ..onTap = () {
-                                            Get.toNamed(
-                                                "/front-screen/forgot-password");
-                                          },
-                                      ),
-                                    ],
-                                  ),
-                                ),
+                                height: 2.h,
                               ),
                             ],
                           ),
@@ -303,69 +245,33 @@ class _SigninViewState extends State<SigninView> {
                     height: 1.h,
                   ),
                   ButtonWidget(
-                      text: "Login",
+                      text: "Reset Password",
                       onTap: () async {
                         showLoaderDialog(context);
-                        if (!_signinFormKey.currentState!.validate()) {
+                        if (!_newpassFormKey.currentState!.validate()) {
                           Navigator.pop(context);
                         }
-                        if (_signinFormKey.currentState!.validate()) {
+                        if (_newpassFormKey.currentState!.validate()) {
                           Map<String, dynamic> mdata;
                           mdata = {
-                            'email': _emailTextController.text,
+                            'token': _tokenTextController.text,
                             'password': sha1
                                 .convert(
                                     utf8.encode(_passwordTextController.text))
                                 .toString(),
                           };
-                          SharedPreferences prefs =
-                              await SharedPreferences.getInstance();
-                          var url = Uri.parse("$urlapi/auth/signin");
+                          var url = Uri.parse("$urlapi/auth/updatepassword");
                           await satoshiAPI(url, jsonEncode(mdata)).then((ress) {
                             var result = jsonDecode(ress);
-                            log(result.toString());
 
-                            if ((result['code'] == "200") &&
-                                (result["message"]["role"] == "member")) {
-                              prefs.setString(
-                                  "email", _emailTextController.text);
-                              prefs.setString(
-                                  "password",
-                                  sha1
-                                      .convert(utf8
-                                          .encode(_passwordTextController.text))
-                                      .toString());
-                              prefs.setString("id", result["message"]["id"]);
-                              prefs.setString("end_date",
-                                  result["message"]["end_date"] ?? "");
-                              prefs.setString('period',
-                                  result["message"]["total_period"] ?? '0');
-                              prefs.setString(
-                                  'amount', result["message"]["amount"] ?? '0');
-                              prefs.setString('devicetoken',
-                                  result["message"]["devicetoken"]);
-                              prefs.setString('selected_language', "en");
-                              if (result["message"]["id_referral"] == null) {
-                                prefs.setString("id_referral", "null");
-                              } else {
-                                prefs.setString("id_referral",
-                                    result["message"]["id_referral"]);
-                              }
-                              prefs.setString(
-                                  "role", result["message"]["role"]);
-                              prefs.setString(
-                                  "timezone", result["message"]["timezone"]);
-                              prefs.setString("membership",
-                                  result["message"]["membership"]);
-                              if (result["message"]["membership"] ==
-                                  "expired") {
-                                Get.toNamed("/front-screen/subscribe");
-                              } else {
-                                Get.toNamed("/front-screen/home");
-                              }
-                              _signinFormKey.currentState?.reset();
-                              _emailTextController.clear();
+                            if ((result['code'] == "200")) {
+                              _newpassFormKey.currentState?.reset();
+                              _tokenTextController.clear();
                               _passwordTextController.clear();
+                              var psnerr = result['message'];
+                              // Navigator.pop(context);
+                              showAlert(psnerr, context);
+                              Get.toNamed("/front-screen/login");
                             } else {
                               var psnerr = result['message'];
                               Navigator.pop(context);
@@ -382,36 +288,11 @@ class _SigninViewState extends State<SigninView> {
                       },
                       textcolor: const Color(0xFF000000),
                       backcolor: const Color(0xFFBFA573),
-                      width: 150,
+                      width: 200,
                       radiuscolor: const Color(0xFFFFFFFF),
                       fontsize: 16,
                       radius: 5),
                   SizedBox(height: 8.h),
-                  RichText(
-                    text: TextSpan(
-                      children: [
-                        TextSpan(
-                          text: "Don't have an account? ",
-                          style: Theme.of(context)
-                              .textTheme
-                              .displayLarge
-                              ?.copyWith(fontSize: 12),
-                        ),
-                        TextSpan(
-                          text: 'Register',
-                          style: Theme.of(context)
-                              .textTheme
-                              .displayLarge
-                              ?.copyWith(
-                                  fontSize: 12, fontWeight: FontWeight.bold),
-                          recognizer: TapGestureRecognizer()
-                            ..onTap = () {
-                              Get.toNamed("/front-screen/register");
-                            },
-                        ),
-                      ],
-                    ),
-                  ),
                 ]),
               ),
             ),

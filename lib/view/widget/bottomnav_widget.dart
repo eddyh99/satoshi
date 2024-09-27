@@ -11,7 +11,6 @@ class Satoshinav extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    log(number.toString());
     return ConvexAppBar(
         style: TabStyle.react,
         activeColor: const Color(0xFFB48B3D),
@@ -51,7 +50,7 @@ class Satoshinav extends StatelessWidget {
                     )),
           TabItem(
               title: 'Settings',
-              icon: number == 2
+              icon: number == 3
                   ? const ImageIcon(AssetImage('assets/images/setting.png'),
                       color: Color(0xFFB48B3D) // Active color
                       )
@@ -70,7 +69,6 @@ class Satoshinav extends StatelessWidget {
                 {Get.toNamed("/front-screen/message")}
               else if (i == 3)
                 {Get.toNamed("/front-screen/setting")}
-
             });
   }
 }

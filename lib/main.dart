@@ -8,12 +8,15 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:satoshi/utils/firebase_messaging_service.dart';
+import 'package:satoshi/view/forgot_pass/forgotpass_view.dart';
+import 'package:satoshi/view/forgot_pass/newpass_view.dart';
 import 'package:satoshi/view/landing_view.dart';
 import 'package:satoshi/view/member/history_view.dart';
 import 'package:satoshi/view/member/home_view.dart';
 import 'package:satoshi/view/member/language_view.dart';
 import 'package:satoshi/view/member/message_view.dart';
 import 'package:satoshi/view/member/setting_view.dart';
+import 'package:satoshi/view/member/upgrade_view.dart';
 import 'package:satoshi/view/register_view.dart';
 import 'package:satoshi/view/signin_view.dart';
 import 'package:satoshi/view/splashscreen.dart';
@@ -120,6 +123,18 @@ class MyApp extends StatelessWidget {
           GetPage(
               name: '/front-screen/language',
               page: () => const LanguageView(),
+              transition: Transition.fadeIn),
+          GetPage(
+              name: '/front-screen/upgrade-plan',
+              page: () => const UpgradeView(),
+              transition: Transition.fadeIn),
+          GetPage(
+              name: '/front-screen/forgot-password',
+              page: () => const ForgotpassView(),
+              transition: Transition.fadeIn),
+          GetPage(
+              name: '/front-screen/new-password',
+              page: () => const NewpassView(),
               transition: Transition.fadeIn),
         ]);
   }

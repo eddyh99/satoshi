@@ -40,39 +40,33 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
     final isSoundEnabled = prefs.getBool('sound') ?? true; // default to true
     final isVibrationEnabled =
         prefs.getBool('vibration') ?? true; // default to true
-    log(isSoundEnabled.toString());
-    log(isVibrationEnabled.toString());
 
     lang = prefs.getString('selected_language') ?? 'en';
-    log("100-${getToken!}");
-    if (getToken == "") {
-      FirebaseMessaging.instance.subscribeToTopic('signal').then((_) {
-        log("Successfully subscribed to topic 'signal'");
-      }).catchError((error) {
-        log("Error subscribing to topic 'signal': $error");
-      });
 
-      String? fcmToken = await FirebaseMessaging.instance.getToken();
-      log("100-$fcmToken");
-      if (fcmToken != null) {
-        Map<String, dynamic> mdata;
-        mdata = {'email': email, 'devicetoken': fcmToken};
-        var url = Uri.parse("$urlapi/v1/member/add_device");
-        await satoshiAPI(url, jsonEncode(mdata));
-        prefs.setString("devicetoken", fcmToken);
-      }
+    FirebaseMessaging.instance.subscribeToTopic('signal').then((_) {
+      log("Successfully subscribed to topic 'signal'");
+    }).catchError((error) {
+      log("Error subscribing to topic 'signal': $error");
+    });
+
+    String? fcmToken = await FirebaseMessaging.instance.getToken();
+    if (fcmToken != null) {
+      Map<String, dynamic> mdata;
+      mdata = {'email': email, 'devicetoken': fcmToken};
+      var url = Uri.parse("$urlapi/v1/member/add_device");
+      await satoshiAPI(url, jsonEncode(mdata));
+      prefs.setString("devicetoken", fcmToken);
     }
 
     // Update the URL after getting preferences
     urltranslated =
         "https://translate.google.com/translate?sl=auto&tl=$lang&hl=en&u=https://pnglobalinternational.com/widget/signal";
-    log(urltranslated);
-    log(lang);
 
     // Initialize the WebViewController after lang is updated
     setState(() {
       _controller = WebViewController()
         ..setJavaScriptMode(JavaScriptMode.unrestricted)
+        ..setBackgroundColor(const Color(0x00000000))
         ..clearCache()
         ..enableZoom(false)
         ..setNavigationDelegate(
@@ -93,10 +87,6 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
               }
             },
             onPageFinished: (url) {
-              // Log the current URL and lang to ensure translation is correct
-              log('Current URL: $url');
-              log('Language Code (lang): $lang'); // Ensure this logs 'es' or any other valid language code
-
               //Inject JavaScript to hide the toolbar inside the iframe with ID 'gt-nvframe'
               _controller!.runJavaScript('''
                 (function() {
