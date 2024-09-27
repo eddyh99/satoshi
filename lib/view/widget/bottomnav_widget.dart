@@ -51,7 +51,7 @@ class Satoshinav extends StatelessWidget {
                     )),
           TabItem(
               title: 'Settings',
-              icon: number == 2
+              icon: number == 3
                   ? const ImageIcon(AssetImage('assets/images/setting.png'),
                       color: Color(0xFFB48B3D) // Active color
                       )

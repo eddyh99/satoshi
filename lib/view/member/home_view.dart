@@ -45,7 +45,6 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
 
     lang = prefs.getString('selected_language') ?? 'en';
     log("100-${getToken!}");
-    if (getToken == "") {
       FirebaseMessaging.instance.subscribeToTopic('signal').then((_) {
         log("Successfully subscribed to topic 'signal'");
       }).catchError((error) {
@@ -60,7 +59,6 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
         var url = Uri.parse("$urlapi/v1/member/add_device");
         await satoshiAPI(url, jsonEncode(mdata));
         prefs.setString("devicetoken", fcmToken);
-      }
     }
 
     // Update the URL after getting preferences

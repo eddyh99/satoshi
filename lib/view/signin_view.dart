@@ -321,6 +321,7 @@ class _SigninViewState extends State<SigninView> {
                           SharedPreferences prefs =
                               await SharedPreferences.getInstance();
                           var url = Uri.parse("$urlapi/auth/signin");
+                          log(url.toString());
                           await satoshiAPI(url, jsonEncode(mdata)).then((ress) {
                             var result = jsonDecode(ress);
                             log(result.toString());
@@ -372,6 +373,7 @@ class _SigninViewState extends State<SigninView> {
                               showAlert(psnerr, context);
                             }
                           }).catchError((err) {
+                            log(err.toString());
                             Navigator.pop(context);
                             showAlert(
                               "Something Wrong, Please Contact Administrator",

@@ -227,7 +227,7 @@ class _MessageViewState extends State<MessageView> with WidgetsBindingObserver {
                 ),
         ),
         bottomNavigationBar: const Satoshinav(
-          number: 3,
+          number: 2,
         ));
   }
 }
