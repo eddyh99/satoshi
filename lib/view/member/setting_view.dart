@@ -1,10 +1,12 @@
-import 'dart:typed_data';
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get/get.dart';
 import 'package:satoshi/utils/extensions.dart';
 import 'package:satoshi/utils/firebase_messaging_service.dart';
+import 'package:satoshi/utils/functions.dart';
+import 'package:satoshi/utils/globalvar.dart';
 import 'package:satoshi/view/widget/bottomnav_widget.dart';
 import 'package:satoshi/view/widget/shimmer_widget.dart';
 import 'package:satoshi/view/widget/text_widget.dart';
@@ -21,12 +23,6 @@ class SettingView extends StatefulWidget {
   }
 }
 
-// Future<void> _launchInWebViewOrVC(Uri url) async {
-//   if (!await launchUrl(url, mode: LaunchMode.inAppWebView)) {
-//     throw Exception('Could not launch $url');
-//   }
-// }
-
 class _SettingViewState extends State<SettingView> {
   dynamic email;
   dynamic idRef;
@@ -39,6 +35,8 @@ class _SettingViewState extends State<SettingView> {
   bool isSoundEnabled = true;
   bool isVibrationEnabled = true;
   late String lang = "en";
+  String body = '';
+  dynamic resultData;
 
   Future<void> _launchURL(tipe) async {
     String url = "";
@@ -61,18 +59,54 @@ class _SettingViewState extends State<SettingView> {
     email = prefs.getString("email")!;
     idRef = prefs.getString("id_referral")!;
     lang = prefs.getString('selected_language') ?? 'en';
+    // String periodString =
+    //     prefs.getString("period") ?? '0'; // Get the string or default to '0'
+    // int periode = int.parse(periodString); // Parse the string to an integer
+
+    // period = periode ~/ 30;
+
+    // String amountString =
+    //     prefs.getString("amount") ?? '0'; // Get the string or default to '0'
+    // amount = double.parse(amountString); // Parse the string to an integer
+
+    // // Parse endDate from the shared preferences
+    // String? endDateString = prefs.getString("end_date");
+    // if (endDateString != null) {
+    //   endDate = DateTime.parse(endDateString);
+    // }
+
+    // // Get the current date and calculate the difference
+    // currentDate = DateTime.now();
+    // if (endDate != null && currentDate != null) {
+    //   difference = endDate!.difference(currentDate!);
+    // }
+    setState(() {
+      // _isLoading = false;
+      isSoundEnabled = prefs.getBool('sound') ?? true;
+      isVibrationEnabled = prefs.getBool('vibration') ?? true;
+    });
+  }
+
+  Future _fetchData() async {
+    //get Sharedpreferences
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    email = prefs.getString("email")!;
+    //get user detail
+    var url = Uri.parse("$urlapi/auth/getmember_byemail?email=$email");
+    var query = jsonDecode(await satoshiAPI(url, body))["message"];
+    resultData = query;
     String periodString =
-        prefs.getString("period") ?? '0'; // Get the string or default to '0'
+        resultData["total_period"] ?? '0'; // Get the string or default to '0'
     int periode = int.parse(periodString); // Parse the string to an integer
 
     period = periode ~/ 30;
 
     String amountString =
-        prefs.getString("amount") ?? '0'; // Get the string or default to '0'
+        resultData["amount"] ?? '0'; // Get the string or default to '0'
     amount = double.parse(amountString); // Parse the string to an integer
 
     // Parse endDate from the shared preferences
-    String? endDateString = prefs.getString("end_date");
+    String? endDateString = resultData["end_date"];
     if (endDateString != null) {
       endDate = DateTime.parse(endDateString);
     }
@@ -84,8 +118,6 @@ class _SettingViewState extends State<SettingView> {
     }
     setState(() {
       _isLoading = false;
-      isSoundEnabled = prefs.getBool('sound') ?? true;
-      isVibrationEnabled = prefs.getBool('vibration') ?? true;
     });
   }
 
@@ -93,6 +125,7 @@ class _SettingViewState extends State<SettingView> {
   void initState() {
     super.initState();
     getPrefer();
+    _fetchData();
   }
 
   @override
@@ -161,16 +194,33 @@ class _SettingViewState extends State<SettingView> {
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              TextWidget(
-                                text: "$period Month (€ $amount)",
-                                fontsize: 16,
-                              ),
-                              TextWidget(
-                                text: "${difference?.inDays} days remaining",
-                                fontsize: 16,
-                              ),
+                              (_isLoading)
+                                  ? ShimmerWidget(tinggi: 2.h, lebar: 30.w)
+                                  : TextWidget(
+                                      text: "$period Month",
+                                      fontsize: 16,
+                                    ),
+                              (_isLoading)
+                                  ? ShimmerWidget(tinggi: 2.h, lebar: 30.w)
+                                  : TextWidget(
+                                      text:
+                                          "${difference?.inDays} days remaining",
+                                      fontsize: 13,
+                                    ),
                             ],
                           ),
+                        ),
+                        const SizedBox(height: 8),
+                        _buildTile(
+                          icon: Icons.diamond_outlined,
+                          text: 'Upgrade Subscription',
+                          trailing: SizedBox.shrink(),
+                          onTap: () {
+                            Get.toNamed("/front-screen/upgrade-plan",
+                                arguments: [
+                                  {"email": email}
+                                ]);
+                          },
                         ),
                         const SizedBox(height: 8),
                         _buildTile(

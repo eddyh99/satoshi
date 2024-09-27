@@ -535,8 +535,6 @@ class _RegisterViewState extends State<RegisterView> {
                                         }
                                         if (_signupFormKey.currentState!
                                             .validate()) {
-                                          log("100-$_ipAddress");
-
                                           Map<String, dynamic> mdata;
                                           mdata = {
                                             'email': _emailTextController.text,

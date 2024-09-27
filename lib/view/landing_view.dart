@@ -37,7 +37,7 @@ class _LandingViewState extends State<LandingView> {
             (result["message"]["role"] == "member")) {
           prefs.setString("id", result["message"]["id"]);
           prefs.setString("end_date", result["message"]["end_date"]);
-          prefs.setString('period', result["message"]["period"]);
+          prefs.setString('period', result["message"]["total_period"]);
           prefs.setString('amount', result["message"]["amount"]);
           prefs.setString('devicetoken', result["message"]["devicetoken"]);
           prefs.setString('selected_language', "en");

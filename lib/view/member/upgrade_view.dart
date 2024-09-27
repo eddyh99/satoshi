@@ -1,33 +1,30 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:satoshi/view/widget/bottomnav_widget.dart';
 import 'package:satoshi/view/widget/button_widget.dart';
 import 'package:satoshi/view/widget/text_widget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
-class HistoryView extends StatefulWidget {
-  const HistoryView({super.key});
+class UpgradeView extends StatefulWidget {
+  const UpgradeView({super.key});
 
   @override
-  State<HistoryView> createState() {
-    return _HistoryViewState();
+  State<UpgradeView> createState() {
+    return _UpgradeViewState();
   }
 }
 
-// Future<void> _launchInWebViewOrVC(Uri url) async {
-//   if (!await launchUrl(url, mode: LaunchMode.inAppWebView)) {
-//     throw Exception('Could not launch $url');
-//   }
-// }
-
-class _HistoryViewState extends State<HistoryView> with WidgetsBindingObserver {
+class _UpgradeViewState extends State<UpgradeView> with WidgetsBindingObserver {
   WebViewController? _webViewController;
+  var _email = Get.arguments[0]["email"];
   late String lang = "en";
   String urltranslated = "";
   bool _isError = false;
   bool _isWebViewLoaded = false;
   bool _isInitialLoad = true;
   bool _isDataReady = true;
+  String _status = 'upgrading';
   late final DateTime _loadStartTime;
   static const Duration _initialLoadTimeout = Duration(seconds: 20);
 
@@ -37,7 +34,7 @@ class _HistoryViewState extends State<HistoryView> with WidgetsBindingObserver {
 
     // Update the URL after getting preferences
     urltranslated =
-        "https://translate.google.com/translate?sl=auto&tl=$lang&hl=en&u=https://pnglobalinternational.com/widget/signal/history";
+        "https://pnglobalinternational.com/widget/subscription/upgrade/$_email";
 
     // Initialize the WebViewController after lang is updated
     setState(() {
@@ -59,12 +56,11 @@ class _HistoryViewState extends State<HistoryView> with WidgetsBindingObserver {
               _loadStartTime = DateTime.now();
               if (mounted) {
                 setState(() {
-                  _isError = false; // Reset error state on new page load
+                  _isError = false;
                 });
               }
             },
             onPageFinished: (url) {
-              //Inject JavaScript to hide the toolbar inside the iframe with ID 'gt-nvframe'
               _webViewController!.runJavaScript('''
                 (function() {
                   var translateBar = document.querySelector('.goog-te-banner-frame');
@@ -102,8 +98,7 @@ class _HistoryViewState extends State<HistoryView> with WidgetsBindingObserver {
                   if (_isWebViewLoaded) {
                     final duration = DateTime.now().difference(_loadStartTime);
                     if (duration < _initialLoadTimeout) {
-                      _isError =
-                          false; // Ensure initial load is considered successful if it completed
+                      _isError = false;
                     } else {
                       _isError = true;
                       _showErrorBottomSheet();
@@ -114,6 +109,14 @@ class _HistoryViewState extends State<HistoryView> with WidgetsBindingObserver {
             },
           ),
         )
+        ..addJavaScriptChannel(
+          'Total',
+          onMessageReceived: (JavaScriptMessage message) async {
+            setState(() {
+              _status = message.message;
+            });
+          },
+        )
         ..loadRequest(Uri.parse(urltranslated));
     });
   }
@@ -121,7 +124,7 @@ class _HistoryViewState extends State<HistoryView> with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
-    getPrefer(); // Fetch preferences before initializing the WebView
+    getPrefer();
 
     WidgetsBinding.instance.addObserver(this);
   }
@@ -173,14 +176,13 @@ class _HistoryViewState extends State<HistoryView> with WidgetsBindingObserver {
                 ButtonWidget(
                     text: "Retry",
                     onTap: () {
-                      Navigator.pop(context); // Close the BottomSheet
+                      Navigator.pop(context);
                       if (mounted) {
-                        _webViewController!.reload(); // Retry loading the page
+                        _webViewController!.reload();
                         setState(() {
                           _isError = false;
-                          _isWebViewLoaded = false; // Reset the loaded state
-                          _isInitialLoad =
-                              true; // Allow initial load check again
+                          _isWebViewLoaded = false;
+                          _isInitialLoad = true;
                         });
                       }
                     },
@@ -202,6 +204,24 @@ class _HistoryViewState extends State<HistoryView> with WidgetsBindingObserver {
   Widget build(BuildContext context) {
     return Scaffold(
         backgroundColor: Colors.black,
+        appBar: AppBar(
+          leading: (_status == 'upgrading')
+              ? IconButton(
+                  icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
+                  onPressed: () => Get.toNamed('front-screen/setting'),
+                )
+              : SizedBox.shrink(),
+          centerTitle: true,
+          title: (_status == 'upgrading')
+              ? Text(
+                  "Upgrade Your Plan",
+                  style: TextStyle(fontSize: 20),
+                )
+              : SizedBox.shrink(),
+          backgroundColor: Colors.transparent,
+          foregroundColor: Colors.white,
+          elevation: 0,
+        ),
         body: SafeArea(
           child: _isError && !_isWebViewLoaded
               ? const Center(
@@ -228,8 +248,25 @@ class _HistoryViewState extends State<HistoryView> with WidgetsBindingObserver {
                   ],
                 ),
         ),
+        floatingActionButton: (_status == 'success')
+            ? FloatingActionButton.extended(
+                onPressed: () {
+                  Get.toNamed(
+                    "/front-screen/home",
+                  );
+                },
+                icon: const Icon(Icons.login_outlined),
+                label: Text(
+                  "Homepage",
+                  style: TextStyle(fontSize: 18),
+                ),
+                backgroundColor: const Color(0xFFBFA573),
+                foregroundColor: Colors.black,
+              )
+            : SizedBox.shrink(),
+        floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
         bottomNavigationBar: const Satoshinav(
-          number: 1,
+          number: 3,
         ));
   }
 }
