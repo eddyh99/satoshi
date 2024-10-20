@@ -360,7 +360,14 @@ class _SigninViewState extends State<SigninView> {
                                   result["message"]["membership"]);
                               if (result["message"]["membership"] ==
                                   "expired") {
-                                Get.toNamed("/front-screen/subscribe");
+                                Get.toNamed(
+                                                "/front-screen/subscribe",
+                                                arguments: [
+                                                  {
+                                                    "email": _emailTextController.text,                                                    
+                                                  },
+                                                ],
+                                              );
                               } else {
                                 Get.toNamed("/front-screen/home");
                               }

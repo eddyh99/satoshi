@@ -1,8 +1,11 @@
 import 'dart:developer';
 import 'dart:typed_data';
+import 'package:event_bus/event_bus.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+EventBus eventBus = EventBus();
 
 class FirebaseMessagingService {
   // Singleton instance
@@ -29,7 +32,7 @@ class FirebaseMessagingService {
     log('Firebase Messaging Service Initialized');
 
     // Handle foreground messages
-    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
       log('Foreground message received: ${message.messageId}');
       log('Message data: ${message.data}');
 
@@ -41,6 +44,7 @@ class FirebaseMessagingService {
           message.notification!.title ?? 'No Title',
           message.notification!.body ?? 'No Body',
         );
+        eventBus.fire(ReloadWebViewEvent());
       }
     });
 
@@ -57,6 +61,7 @@ class FirebaseMessagingService {
     if (message.notification != null) {
       log('Background Notification Title: ${message.notification!.title}');
       log('Background Notification Body: ${message.notification!.body}');
+      eventBus.fire(ReloadWebViewEvent()); // Trigger WebView reload event
     }
   }
 
@@ -181,3 +186,5 @@ class FirebaseMessagingService {
     );
   }
 }
+
+class ReloadWebViewEvent {}
