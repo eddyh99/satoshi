@@ -89,43 +89,40 @@ class FirebaseMessagingService {
   }
 
   // Initialize local notifications (public method)
-  void initializeLocalNotifications() {
+  Future<void> initializeLocalNotifications() async {
     const AndroidInitializationSettings initializationSettingsAndroid =
         AndroidInitializationSettings(
             '@mipmap/ic_launcher'); // Ensure you have a launcher icon
-    const InitializationSettings initializationSettings =
-        InitializationSettings(android: initializationSettingsAndroid);
+    final DarwinInitializationSettings initializationSettingsDarwin =
+        DarwinInitializationSettings(
+            onDidReceiveLocalNotification: onDidReceiveLocalNotification);
 
-    _flutterLocalNotificationsPlugin.initialize(initializationSettings);
+    final InitializationSettings initializationSettings =
+        InitializationSettings(
+      android: initializationSettingsAndroid,
+      iOS: initializationSettingsDarwin,
+      macOS: initializationSettingsDarwin,
+    );
+
+    await _flutterLocalNotificationsPlugin.initialize(
+      initializationSettings,
+      onDidReceiveNotificationResponse: onDidReceiveNotificationResponse,
+    );
     log('Local notification plugin initialized');
   }
 
-  Future<void> _createOrUpdateNotificationChannel(
-      bool isSoundEnabled, bool isVibrationEnabled) async {
-    final flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+  // Callback for iOS foreground notifications
+  Future<void> onDidReceiveLocalNotification(
+      int id, String? title, String? body, String? payload) async {
+    // Handle iOS foreground notification
+    print("Received iOS foreground notification: $title - $body");
+  }
 
-    // Delete the existing channel if it exists
-    await flutterLocalNotificationsPlugin
-        .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>()
-        ?.deleteNotificationChannel('default_channel_id');
-
-    // Create a new channel with updated settings
-    AndroidNotificationChannel channel = AndroidNotificationChannel(
-      'default_channel_id', // Channel ID
-      'Default', // Channel name
-      importance: Importance.max, // High importance
-      enableVibration: isVibrationEnabled,
-      playSound: isSoundEnabled,
-      vibrationPattern: isVibrationEnabled
-          ? Int64List.fromList([0, 1000, 500, 2000]) // Vibration pattern
-          : null,
-    );
-
-    await flutterLocalNotificationsPlugin
-        .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>()
-        ?.createNotificationChannel(channel);
+// Callback for general notification response
+  Future<void> onDidReceiveNotificationResponse(
+      NotificationResponse response) async {
+    // Handle notification response
+    print("Notification tapped with payload: ${response.payload}");
   }
 
   Future<String> _createNotificationChannelWithUniqueId(
@@ -175,8 +172,21 @@ class FirebaseMessagingService {
           isVibrationEnabled ? Int64List.fromList([0, 1000, 500, 2000]) : null,
     );
 
-    NotificationDetails platformChannelSpecifics =
-        NotificationDetails(android: androidPlatformChannelSpecifics);
+    // iOS Notification Details
+    // iOS/macOS Notification Details
+    DarwinNotificationDetails iosPlatformChannelSpecifics =
+        DarwinNotificationDetails(
+      presentAlert: true, // Show alert
+      presentBadge: true, // Display badge
+      presentSound: isSoundEnabled, // Play sound
+      sound: isSoundEnabled ? 'default' : null, // Custom sound or default
+    );
+
+    // Unified platform-specific notification details
+    NotificationDetails platformChannelSpecifics = NotificationDetails(
+        android: androidPlatformChannelSpecifics,
+        iOS:
+            iosPlatformChannelSpecifics); // Use DarwinNotificationDetails for iOS/macOS
 
     await _flutterLocalNotificationsPlugin.show(
       0,
