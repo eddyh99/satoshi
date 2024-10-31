@@ -59,27 +59,7 @@ class _SettingViewState extends State<SettingView> {
     email = prefs.getString("email")!;
     idRef = prefs.getString("id_referral")!;
     lang = prefs.getString('selected_language') ?? 'en';
-    // String periodString =
-    //     prefs.getString("period") ?? '0'; // Get the string or default to '0'
-    // int periode = int.parse(periodString); // Parse the string to an integer
 
-    // period = periode ~/ 30;
-
-    // String amountString =
-    //     prefs.getString("amount") ?? '0'; // Get the string or default to '0'
-    // amount = double.parse(amountString); // Parse the string to an integer
-
-    // // Parse endDate from the shared preferences
-    // String? endDateString = prefs.getString("end_date");
-    // if (endDateString != null) {
-    //   endDate = DateTime.parse(endDateString);
-    // }
-
-    // // Get the current date and calculate the difference
-    // currentDate = DateTime.now();
-    // if (endDate != null && currentDate != null) {
-    //   difference = endDate!.difference(currentDate!);
-    // }
     setState(() {
       // _isLoading = false;
       isSoundEnabled = prefs.getBool('sound') ?? true;
@@ -167,8 +147,8 @@ class _SettingViewState extends State<SettingView> {
                                       "assets/images/background-profile.png")))),
                       Positioned(
                         top: 100,
-                        child: Image.asset("assets/images/logo.png",
-                            width: 100, height: 100, fit: BoxFit.cover),
+                        child: Image.asset("assets/images/logo-satoshi.png",
+                            width: 100, height: 100, fit: BoxFit.contain),
                       ),
                     ],
                   ),
@@ -222,14 +202,14 @@ class _SettingViewState extends State<SettingView> {
                                 ]);
                           },
                         ),
-                        const SizedBox(height: 8),
-                        _buildTile(
-                          icon: Icons.language,
-                          text: 'Language ($lang)',
-                          onTap: () {
-                            Get.toNamed("/front-screen/language");
-                          },
-                        ),
+                        // const SizedBox(height: 8),
+                        // _buildTile(
+                        //   icon: Icons.language,
+                        //   text: 'Language ($lang)',
+                        //   onTap: () {
+                        //     Get.toNamed("/front-screen/language");
+                        //   },
+                        // ),
                         const SizedBox(height: 8),
                         _buildTile(
                           icon: Icons.volume_up,

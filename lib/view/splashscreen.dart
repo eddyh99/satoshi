@@ -14,7 +14,7 @@ class SplashScreen extends StatelessWidget {
               color: Colors.black,
             ),
             child: Image.asset(
-              "assets/images/logo.png",
+              "assets/images/logo-satoshi.png",
               width: 186,
               height: 210,
               fit: BoxFit.contain,

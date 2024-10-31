@@ -61,8 +61,7 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
     }
 
     // Update the URL after getting preferences
-    urltranslated =
-        "https://translate.google.com/translate?sl=auto&tl=$lang&hl=en&u=https://pnglobalinternational.com/widget/signal";
+    urltranslated = "https://pnglobalinternational.com/widget/signal";
 
     // Initialize the WebViewController after lang is updated
     setState(() {

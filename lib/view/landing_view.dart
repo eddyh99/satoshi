@@ -115,7 +115,7 @@ class _LandingViewState extends State<LandingView> {
               height: 10.h,
             ),
             const Image(
-              image: AssetImage('assets/images/logo.png'),
+              image: AssetImage('assets/images/logo-satoshi.png'),
               width: 186,
               height: 210,
             ),

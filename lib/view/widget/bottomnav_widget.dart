@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:convex_bottom_bar/convex_bottom_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -7,7 +5,7 @@ import 'package:satoshi/utils/firebase_messaging_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class Satoshinav extends StatefulWidget {
- final int number;
+  final int number;
   const Satoshinav({super.key, required this.number});
 
   @override
@@ -23,10 +21,9 @@ class _SatoshinavState extends State<Satoshinav> {
   void initState() {
     super.initState();
     _checkNewMessageStatus();
-
     // Listen to the event bus for WebView reload and message updates
     eventBus.on<ReloadWebViewEvent>().listen((event) {
-      _checkNewMessageStatus();  // Refresh message badge state
+      _checkNewMessageStatus(); // Refresh message badge state
     });
   }
 
@@ -104,33 +101,37 @@ class _SatoshinavState extends State<Satoshinav> {
           TabItem(
               title: 'Message',
               icon: Stack(
-            children: [
-              widget.number == 2
-                  ? const ImageIcon(
-                      AssetImage('assets/images/message.png'),
-                      color: Color(0xFFB48B3D),
-                    )
-                  : const ImageIcon(
-                      AssetImage('assets/images/message.png'),
-                      color: Colors.white,
-                    ),
-              if (hasNewMessage) // Show the red badge if there's a new message
-                Positioned(
-                  right: 0,
-                  child: Container(
-                    padding: const EdgeInsets.all(2),
-                    decoration: const BoxDecoration(
-                      color: Colors.red,
-                      shape: BoxShape.circle,
-                    ),
-                    constraints: const BoxConstraints(
-                      minWidth: 8,
-                      minHeight: 8,
-                    ),
-                  ),
-                ),
-            ],
-          )),
+                clipBehavior: Clip.none,
+                fit: StackFit.expand,
+                children: [
+                  widget.number == 2
+                      ? const ImageIcon(
+                          AssetImage('assets/images/message.png'),
+                          color: Color(0xFFB48B3D),
+                        )
+                      : const ImageIcon(
+                          AssetImage('assets/images/message.png'),
+                          color: Colors.white,
+                        ),
+                  (hasNewMessage)
+                      ? Positioned(
+                          right: 0,
+                          top: 0,
+                          child: Container(
+                            padding: const EdgeInsets.all(2),
+                            decoration: const BoxDecoration(
+                              color: Colors.red,
+                              shape: BoxShape.circle,
+                            ),
+                            constraints: const BoxConstraints(
+                              minWidth: 8,
+                              minHeight: 8,
+                            ),
+                          ),
+                        )
+                      : SizedBox.shrink()
+                ],
+              )),
           TabItem(
               title: 'Settings',
               icon: widget.number == 3
