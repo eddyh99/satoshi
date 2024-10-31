@@ -37,7 +37,7 @@ class _MessageViewState extends State<MessageView> with WidgetsBindingObserver {
 
     // Update the URL after getting preferences
     urltranslated =
-        "https://translate.google.com/translate?sl=auto&tl=$lang&hl=en&u=https://pnglobalinternational.com/widget/message";
+        "https://translate.google.com/translate?sl=auto&tl=en&hl=en&u=https://pnglobalinternational.com/widget/message";
 
     // Initialize the WebViewController after lang is updated
     setState(() {
@@ -52,7 +52,7 @@ class _MessageViewState extends State<MessageView> with WidgetsBindingObserver {
               _webViewController!.runJavaScript('''
                 (function() {
                   var style = document.createElement('style');
-                  style.innerHTML = '.goog-te-banner-frame, #gt-nvframe { display: none !important; }';
+                  style.innerHTML = '.goog-te-banner-frame, #gt-nvframe { display: block !important; }';
                   document.head.appendChild(style);
                 })();
               ''');
@@ -69,12 +69,12 @@ class _MessageViewState extends State<MessageView> with WidgetsBindingObserver {
                 (function() {
                   var translateBar = document.querySelector('.goog-te-banner-frame');
                   if (translateBar) {
-                    translateBar.style.display = 'none';
+                    translateBar.style.display = 'block';
                   }
 
                   var iframe = document.getElementById('gt-nvframe');
                   if (iframe) {
-                    iframe.style.display = 'none'; // Hide iframe if found
+                    iframe.style.display = 'block'; // Hide iframe if found
                   }
                   document.body.style.top = '0px'; // Adjust body top to avoid gap
                 })();

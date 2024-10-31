@@ -36,8 +36,7 @@ class _HistoryViewState extends State<HistoryView> with WidgetsBindingObserver {
     lang = prefs.getString('selected_language') ?? 'en';
 
     // Update the URL after getting preferences
-    urltranslated =
-        "https://translate.google.com/translate?sl=auto&tl=$lang&hl=en&u=https://pnglobalinternational.com/widget/signal/history";
+    urltranslated = "https://pnglobalinternational.com/widget/signal/history";
 
     // Initialize the WebViewController after lang is updated
     setState(() {

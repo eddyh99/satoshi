@@ -323,7 +323,6 @@ class _SigninViewState extends State<SigninView> {
                           var url = Uri.parse("$urlapi/auth/signin");
                           await satoshiAPI(url, jsonEncode(mdata)).then((ress) {
                             var result = jsonDecode(ress);
-                            log(result.toString());
 
                             if ((result['code'] == "200") &&
                                 (result["message"]["role"] == "member")) {
