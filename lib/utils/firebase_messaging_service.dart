@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:event_bus/event_bus.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 EventBus eventBus = EventBus();
@@ -45,6 +46,21 @@ class FirebaseMessagingService {
           message.notification!.body ?? 'No Body',
         );
         eventBus.fire(ReloadWebViewEvent());
+      }
+    });
+
+    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) async {
+      final prefs = await SharedPreferences.getInstance();
+      if (message.data['link'] != null) {
+        final Uri uri = Uri.parse(message.data['link']);
+        if (uri.scheme == 'satoshi') {
+          if (uri.host == 'signal') {
+            Get.toNamed("/front-screen/home");
+          } else {
+            await prefs.setBool('hasNewMessage', false);
+            Get.toNamed("/front-screen/message");
+          }
+        }
       }
     });
 
