@@ -45,5 +45,34 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<!-- Enable Background Modes -->
+    <key>UIBackgroundModes</key>
+    <array>
+        <string>fetch</string>
+        <string>remote-notification</string>
+    </array>
+
+    <!-- Disable Firebase App Delegate Proxy, handled manually in AppDelegate.swift -->
+    <key>FirebaseAppDelegateProxyEnabled</key>
+    <false/>
+
+    <!-- App Transport Security Settings (if needed for arbitrary network requests) -->
+    <key>NSAppTransportSecurity</key>
+    <dict>
+        <key>NSAllowsArbitraryLoads</key>
+        <true/>
+    </dict>
+
+    <!-- Permissions for Location (optional, if your app needs location services) -->
+    <key>NSLocationWhenInUseUsageDescription</key>
+    <string>This app needs access to location for notifications.</string>
+    <key>NSLocationAlwaysUsageDescription</key>
+    <string>This app needs access to location for notifications.</string>
+    <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+    <string>This app needs access to location for notifications.</string>
+
+    <!-- Permissions for Notifications -->
+    <key>NSPushNotificationUsageDescription</key>
+    <string>This app needs notifications to alert you about important updates.</string>
 </dict>
 </plist>

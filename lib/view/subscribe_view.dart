@@ -15,8 +15,8 @@ class SubscribeView extends StatefulWidget {
 class _SubscribeViewState extends State<SubscribeView> {
   late final WebViewController wvcontroller;
   var _email = Get.arguments[0]["email"];
-  var _password = Get.arguments[0]["password"];
-  var _referral = Get.arguments[0]["referral"];
+  //var _password = Get.arguments[0]["password"];
+  //var _referral = Get.arguments[0]["referral"];
   String token = "";
   int value = 0;
   String _status = 'pending';
@@ -26,8 +26,8 @@ class _SubscribeViewState extends State<SubscribeView> {
   void initState() {
     super.initState();
     print(_email);
-    print(_password);
-    print(_referral);
+    //print(_password);
+    //print(_referral);
 
     wvcontroller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)

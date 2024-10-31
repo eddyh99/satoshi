@@ -1,4 +1,8 @@
+import 'dart:async';
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
+import 'package:satoshi/utils/firebase_messaging_service.dart';
 import 'package:satoshi/view/widget/bottomnav_widget.dart';
 import 'package:satoshi/view/widget/button_widget.dart';
 import 'package:satoshi/view/widget/text_widget.dart';
@@ -30,6 +34,7 @@ class _MessageViewState extends State<MessageView> with WidgetsBindingObserver {
   bool _isDataReady = true;
   late final DateTime _loadStartTime;
   static const Duration _initialLoadTimeout = Duration(seconds: 20);
+  late final StreamSubscription _eventBusSubscription;
 
   Future<dynamic> getPrefer() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -123,11 +128,20 @@ class _MessageViewState extends State<MessageView> with WidgetsBindingObserver {
     super.initState();
     getPrefer(); // Fetch preferences before initializing the WebView
     WidgetsBinding.instance.addObserver(this);
+    _eventBusSubscription = eventBus.on<ReloadWebViewEvent>().listen((event) {
+      log('ReloadWebViewEvent received. Reloading WebView...');
+      if (_webViewController != null) {
+        _webViewController!.reload();
+      } else {
+        log('Error: WebViewController is null, cannot reload.');
+      }
+    });
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    _eventBusSubscription.cancel();
     super.dispose();
   }
 

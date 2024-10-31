@@ -1,8 +1,9 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
-
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:satoshi/utils/firebase_messaging_service.dart';
 import 'package:satoshi/utils/functions.dart';
 import 'package:satoshi/utils/globalvar.dart';
 import 'package:satoshi/view/widget/bottomnav_widget.dart';
@@ -32,6 +33,7 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
   static const Duration _initialLoadTimeout = Duration(seconds: 20);
   dynamic email;
   dynamic ref;
+  late final StreamSubscription _eventBusSubscription;
 
   Future<dynamic> getPrefer() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -145,16 +147,26 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
     super.initState();
     getPrefer(); // Fetch preferences before initializing the WebView
     WidgetsBinding.instance.addObserver(this);
+    // Subscribe to the EventBus event to reload the WebView when notified
+    _eventBusSubscription = eventBus.on<ReloadWebViewEvent>().listen((event) {
+      log('ReloadWebViewEvent received. Reloading WebView...');
+      if (_controller != null) {
+        _controller!.reload();
+      } else {
+        log('Error: WebViewController is null, cannot reload.');
+      }
+    });
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    _eventBusSubscription.cancel();
     super.dispose();
   }
 
   @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
+  void didChangeAppLifecycleState(AppLifecycleState state) async {
     if (state == AppLifecycleState.paused) {
       if (mounted) {
         _controller!

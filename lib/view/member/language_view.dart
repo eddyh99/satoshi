@@ -25,6 +25,11 @@ class _LanguageViewState extends State<LanguageView>
     {'name': 'Bahasa Indonesia', 'code': 'id'},
     {'name': 'Português', 'code': 'pt'},
     {'name': 'Русский', 'code': 'ru'},
+    {'name': 'Italian', 'code': 'it'},
+    {'name': 'Arabic', 'code': 'ar'},
+    {'name': 'Chinese', 'code': 'zh-CN'},
+    {'name': 'Japanese', 'code': 'ja'},
+    {'name': 'Turkish', 'code': 'tr'},
   ];
 
   @override

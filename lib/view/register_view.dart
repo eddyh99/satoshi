@@ -569,17 +569,6 @@ class _RegisterViewState extends State<RegisterView> {
                                                 arguments: [
                                                   {
                                                     "email": email,
-                                                    "password": sha1
-                                                        .convert(utf8.encode(
-                                                            _passwordTextController
-                                                                .text))
-                                                        .toString(),
-                                                    "referral":
-                                                        _refTextController
-                                                                .text.isEmpty
-                                                            ? null
-                                                            : _refTextController
-                                                                .text
                                                   },
                                                 ],
                                               );

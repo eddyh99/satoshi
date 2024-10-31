@@ -321,6 +321,7 @@ class _SigninViewState extends State<SigninView> {
                           SharedPreferences prefs =
                               await SharedPreferences.getInstance();
                           var url = Uri.parse("$urlapi/auth/signin");
+                          log(url.toString());
                           await satoshiAPI(url, jsonEncode(mdata)).then((ress) {
                             var result = jsonDecode(ress);
 
@@ -358,7 +359,14 @@ class _SigninViewState extends State<SigninView> {
                                   result["message"]["membership"]);
                               if (result["message"]["membership"] ==
                                   "expired") {
-                                Get.toNamed("/front-screen/subscribe");
+                                Get.toNamed(
+                                                "/front-screen/subscribe",
+                                                arguments: [
+                                                  {
+                                                    "email": _emailTextController.text,                                                    
+                                                  },
+                                                ],
+                                              );
                               } else {
                                 Get.toNamed("/front-screen/home");
                               }
@@ -371,6 +379,7 @@ class _SigninViewState extends State<SigninView> {
                               showAlert(psnerr, context);
                             }
                           }).catchError((err) {
+                            log(err.toString());
                             Navigator.pop(context);
                             showAlert(
                               "Something Wrong, Please Contact Administrator",
