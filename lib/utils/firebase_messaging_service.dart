@@ -155,6 +155,7 @@ class FirebaseMessagingService {
     final prefs = await SharedPreferences.getInstance();
     final isSoundEnabled = prefs.getBool('sound') ?? true;
     final isVibrationEnabled = prefs.getBool('vibration') ?? true;
+    await prefs.setBool('hasNewMessage', true);
 
     // Create a new notification channel with a unique ID
     String newChannelId = await _createNotificationChannelWithUniqueId(

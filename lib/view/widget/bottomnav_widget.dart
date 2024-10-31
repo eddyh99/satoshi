@@ -21,26 +21,15 @@ class _SatoshinavState extends State<Satoshinav> {
   void initState() {
     super.initState();
     _checkNewMessageStatus();
-
     // Listen to the event bus for WebView reload and message updates
     eventBus.on<ReloadWebViewEvent>().listen((event) {
-      _setNewMessageStatus(); // Refresh message badge state
+      _checkNewMessageStatus(); // Refresh message badge state
     });
   }
 
   // Check SharedPreferences to see if there's a new message
   Future<void> _checkNewMessageStatus() async {
     final prefs = await SharedPreferences.getInstance();
-    bool newMessage = prefs.getBool('hasNewMessage') ?? false;
-    setState(() {
-      hasNewMessage = newMessage;
-    });
-  }
-
-  // Set SharedPreferences to see if there's a new message
-  Future<void> _setNewMessageStatus() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('hasNewMessage', true);
     bool newMessage = prefs.getBool('hasNewMessage') ?? false;
     setState(() {
       hasNewMessage = newMessage;
