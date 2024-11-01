@@ -32,20 +32,20 @@ class FirebaseMessagingService {
 
     log('Firebase Messaging Service Initialized');
 
-    // Handle foreground messages
+// Foreground message handler
     FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
-      log('Foreground message received: ${message.messageId}');
-      log('Message data: ${message.data}');
-
       if (message.notification != null) {
-        log('Notification Title: ${message.notification!.title}');
-        log('Notification Body: ${message.notification!.body}');
+        final Uri uri = Uri.parse(message.data['link'] ?? '');
+        if (uri.scheme == 'satoshi' && uri.host == 'message') {
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setBool('hasNewMessage', true);
+          _showNotification(
+            message.notification!.title ?? 'No Title',
+            message.notification!.body ?? 'No Body',
+          );
 
-        _showNotification(
-          message.notification!.title ?? 'No Title',
-          message.notification!.body ?? 'No Body',
-        );
-        eventBus.fire(ReloadWebViewEvent());
+          eventBus.fire(ReloadWebViewEvent()); // Trigger state update
+        }
       }
     });
 
@@ -68,16 +68,19 @@ class FirebaseMessagingService {
     FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
   }
 
-  // Background message handler
+// Background message handler
   static Future<void> _firebaseMessagingBackgroundHandler(
       RemoteMessage message) async {
     log('Handling background message: ${message.messageId}');
     log('Message data: ${message.data}');
 
     if (message.notification != null) {
-      log('Background Notification Title: ${message.notification!.title}');
-      log('Background Notification Body: ${message.notification!.body}');
-      eventBus.fire(ReloadWebViewEvent()); // Trigger WebView reload event
+      final Uri uri = Uri.parse(message.data['link'] ?? '');
+      if (uri.scheme == 'satoshi' && uri.host == 'message') {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setBool('hasNewMessage', true);
+        eventBus.fire(ReloadWebViewEvent()); // Trigger state update
+      }
     }
   }
 
@@ -171,7 +174,6 @@ class FirebaseMessagingService {
     final prefs = await SharedPreferences.getInstance();
     final isSoundEnabled = prefs.getBool('sound') ?? true;
     final isVibrationEnabled = prefs.getBool('vibration') ?? true;
-    await prefs.setBool('hasNewMessage', true);
 
     // Create a new notification channel with a unique ID
     String newChannelId = await _createNotificationChannelWithUniqueId(

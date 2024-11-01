@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
+import 'dart:io' show Platform;
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:satoshi/utils/firebase_messaging_service.dart';
@@ -38,26 +39,28 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
   Future<dynamic> getPrefer() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     String? email = prefs.getString("email");
-    String? getToken = prefs.getString("devicetoken");
-    final isSoundEnabled = prefs.getBool('sound') ?? true; // default to true
-    final isVibrationEnabled =
-        prefs.getBool('vibration') ?? true; // default to true
+    final isSoundEnabled = prefs.getBool('sound') ?? true;
+    final isVibrationEnabled = prefs.getBool('vibration') ?? true;
 
     lang = prefs.getString('selected_language') ?? 'en';
 
-    FirebaseMessaging.instance.subscribeToTopic('signal').then((_) {
-      log("Successfully subscribed to topic 'signal'");
-    }).catchError((error) {
-      log("Error subscribing to topic 'signal': $error");
-    });
+    // Only initialize FCM if running on Android or iOS
+    if (Platform.isAndroid || Platform.isIOS) {
+      FirebaseMessaging.instance.subscribeToTopic('signal').then((_) {
+        log("Successfully subscribed to topic 'signal'");
+      }).catchError((error) {
+        log("Error subscribing to topic 'signal': $error");
+      });
 
-    String? fcmToken = await FirebaseMessaging.instance.getToken();
-    if (fcmToken != null) {
-      Map<String, dynamic> mdata;
-      mdata = {'email': email, 'devicetoken': fcmToken};
-      var url = Uri.parse("$urlapi/v1/member/add_device");
-      await satoshiAPI(url, jsonEncode(mdata));
-      prefs.setString("devicetoken", fcmToken);
+      String? fcmToken = await FirebaseMessaging.instance.getToken();
+      if (fcmToken != null) {
+        Map<String, dynamic> mdata = {'email': email, 'devicetoken': fcmToken};
+        var url = Uri.parse("$urlapi/v1/member/add_device");
+        await satoshiAPI(url, jsonEncode(mdata));
+        prefs.setString("devicetoken", fcmToken);
+      }
+    } else {
+      log("FCM is not supported on this platform.");
     }
 
     // Update the URL after getting preferences

@@ -129,7 +129,7 @@ class _SatoshinavState extends State<Satoshinav> {
                             ),
                           ),
                         )
-                      : SizedBox.shrink()
+                      : const SizedBox.shrink()
                 ],
               )),
           TabItem(
