@@ -1,10 +1,14 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:satoshi/view/widget/bottomnav_widget.dart';
 import 'package:satoshi/view/widget/button_widget.dart';
+import 'package:satoshi/view/widget/errorbuttom_widget.dart';
 import 'package:satoshi/view/widget/text_widget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+import 'package:webview_windows/webview_windows.dart';
 
 class UpgradeView extends StatefulWidget {
   const UpgradeView({super.key});
@@ -16,29 +20,29 @@ class UpgradeView extends StatefulWidget {
 }
 
 class _UpgradeViewState extends State<UpgradeView> with WidgetsBindingObserver {
-  WebViewController? _webViewController;
+  WebViewController? webViewMobile;
+  final WebviewController webViewDesktop = WebviewController();
   var _email = Get.arguments[0]["email"];
-  late String lang = "en";
-  String urltranslated = "";
-  bool _isError = false;
-  bool _isWebViewLoaded = false;
-  bool _isInitialLoad = true;
-  bool _isDataReady = true;
+  String url = "";
+  bool isError = false;
+  bool isWebViewLoaded = false;
+  bool isInitialLoad = true;
+  bool isDataReady = true;
+  bool isWindowsWebViewReady = false;
   String _status = 'upgrading';
   late final DateTime _loadStartTime;
   static const Duration _initialLoadTimeout = Duration(seconds: 20);
 
-  Future<dynamic> getPrefer() async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    lang = prefs.getString('selected_language') ?? 'en';
-
+  Future<void> loadWebViewMobile() async {
     // Update the URL after getting preferences
-    urltranslated =
-        "https://pnglobalinternational.com/widget/subscription/upgrade/$_email";
+    print(_email);
+    url =
+        // "https://pnglobalinternational.com/widget/subscription/upgrade/$_email";
+        "https://pnglobalinternational.com/widget/subscription/upgrade_success";
 
     // Initialize the WebViewController after lang is updated
     setState(() {
-      _webViewController = WebViewController()
+      webViewMobile = WebViewController()
         ..setJavaScriptMode(JavaScriptMode.unrestricted)
         ..setBackgroundColor(const Color(0x00000000))
         ..clearCache()
@@ -46,47 +50,37 @@ class _UpgradeViewState extends State<UpgradeView> with WidgetsBindingObserver {
         ..setNavigationDelegate(
           NavigationDelegate(
             onPageStarted: (String url) {
-              _webViewController!.runJavaScript('''
-                (function() {
-                  var style = document.createElement('style');
-                  style.innerHTML = '.goog-te-banner-frame, #gt-nvframe { display: none !important; }';
-                  document.head.appendChild(style);
-                })();
-              ''');
               _loadStartTime = DateTime.now();
               if (mounted) {
                 setState(() {
-                  _isError = false;
+                  isError = false;
                 });
               }
             },
             onPageFinished: (url) {
-              _webViewController!.runJavaScript('''
-                (function() {
-                  var translateBar = document.querySelector('.goog-te-banner-frame');
-                  if (translateBar) {
-                    translateBar.style.display = 'none';
-                  }
-
-                  var iframe = document.getElementById('gt-nvframe');
-                  if (iframe) {
-                    iframe.style.display = 'none'; // Hide iframe if found
-                  }
-                  document.body.style.top = '0px'; // Adjust body top to avoid gap
-                })();
-              ''');
-
               if (mounted) {
                 setState(() {
-                  _isWebViewLoaded = true;
-                  if (_isInitialLoad) {
-                    _isInitialLoad = false;
+                  isWebViewLoaded = true;
+                  if (isInitialLoad) {
+                    isInitialLoad = false;
                     final duration = DateTime.now().difference(_loadStartTime);
                     if (duration < _initialLoadTimeout) {
-                      _isError = false;
-                      _isDataReady = false;
-                    } else if (_isError) {
-                      _showErrorBottomSheet();
+                      isError = false;
+                      isDataReady = false;
+                    } else if (isError) {
+                      ErrorBottomSheet(
+                        onRetry: () {
+                          Navigator.pop(context);
+                          if (mounted) {
+                            webViewMobile!.reload();
+                            setState(() {
+                              isError = false;
+                              isWebViewLoaded = false;
+                              isInitialLoad = true;
+                            });
+                          }
+                        },
+                      );
                     }
                   }
                 });
@@ -95,13 +89,25 @@ class _UpgradeViewState extends State<UpgradeView> with WidgetsBindingObserver {
             onWebResourceError: (error) {
               if (mounted) {
                 setState(() {
-                  if (_isWebViewLoaded) {
+                  if (isWebViewLoaded) {
                     final duration = DateTime.now().difference(_loadStartTime);
                     if (duration < _initialLoadTimeout) {
-                      _isError = false;
+                      isError = false;
                     } else {
-                      _isError = true;
-                      _showErrorBottomSheet();
+                      isError = true;
+                      ErrorBottomSheet(
+                        onRetry: () {
+                          Navigator.pop(context);
+                          if (mounted) {
+                            webViewMobile!.reload();
+                            setState(() {
+                              isError = false;
+                              isWebViewLoaded = false;
+                              isInitialLoad = true;
+                            });
+                          }
+                        },
+                      );
                     }
                   }
                 });
@@ -117,15 +123,78 @@ class _UpgradeViewState extends State<UpgradeView> with WidgetsBindingObserver {
             });
           },
         )
-        ..loadRequest(Uri.parse(urltranslated));
+        ..loadRequest(Uri.parse(url));
+    });
+  }
+
+  Future<void> loadWebViewDesktop() async {
+    try {
+      await webViewDesktop.initialize();
+      await webViewDesktop.loadUrl(url);
+      await webViewDesktop.setPopupWindowPolicy(WebviewPopupWindowPolicy.deny);
+      await webViewDesktop.setBackgroundColor(Colors.black);
+      await webViewDesktop.clearCache();
+      webViewDesktop.loadingState.listen((state) {
+        if (state == LoadingState.navigationCompleted) {
+          setState(() {
+            isWindowsWebViewReady = true;
+          });
+        }
+      });
+      webViewDesktop.webMessage.listen((event) {
+        print("CEK DATA DI WINDOWS");
+        print(event);
+      });
+
+      // webViewDesktop.url.listen((url) {
+      //   // Debug: Print the URL to check the output
+      //   if (url
+      //       .startsWith("https://pnglobalinternational.com?status=success")) {
+      //     final status = Uri.parse(url).queryParameters['status'];
+      //     if (status != null) {
+      //       setState(() {
+      //         _status = status;
+      //         print(_status);
+      //       });
+      //     }
+      //   }
+
+      // Check if the URL starts with your custom scheme
+      // if (url.startsWith("myapp://status=")) {
+      //   final status = Uri.parse(url).queryParameters['status'];
+      //   if (status != null) {
+      //     setState(() {
+      //       _status = status;
+      //     });
+      //   }
+      // }
+      // });
+      if (!mounted) return;
+      print("INI DARI WINDOWS");
+    } catch (e) {
+      ErrorBottomSheet(onRetry: () {
+        Navigator.pop(context);
+        if (mounted) {
+          webViewDesktop.reload();
+        }
+      });
+    }
+  }
+
+  void loadWebView() {
+    setState(() {
+      if (Platform.isAndroid || Platform.isIOS) {
+        loadWebViewMobile();
+      } else {
+        loadWebViewDesktop();
+      }
     });
   }
 
   @override
   void initState() {
     super.initState();
-    getPrefer();
-
+    loadWebView();
     WidgetsBinding.instance.addObserver(this);
   }
 
@@ -135,74 +204,9 @@ class _UpgradeViewState extends State<UpgradeView> with WidgetsBindingObserver {
     super.dispose();
   }
 
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.paused) {
-      if (mounted) {
-        _webViewController!
-            .runJavaScript("document.body.style.visibility = 'hidden';");
-      }
-    } else if (state == AppLifecycleState.resumed) {
-      if (mounted) {
-        _webViewController!
-            .runJavaScript("document.body.style.visibility = 'visible';");
-      }
-    }
-  }
-
-  void _showErrorBottomSheet() {
-    if (mounted) {
-      showModalBottomSheet(
-        context: context,
-        builder: (BuildContext context) {
-          return Container(
-            padding: const EdgeInsets.all(16.0),
-            height: 150,
-            decoration: const BoxDecoration(
-              color: Colors.black,
-            ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  'Connection error. Please check your internet and try again.',
-                  style: Theme.of(context)
-                      .textTheme
-                      .displayLarge
-                      ?.copyWith(fontSize: 16),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 20),
-                ButtonWidget(
-                    text: "Retry",
-                    onTap: () {
-                      Navigator.pop(context);
-                      if (mounted) {
-                        _webViewController!.reload();
-                        setState(() {
-                          _isError = false;
-                          _isWebViewLoaded = false;
-                          _isInitialLoad = true;
-                        });
-                      }
-                    },
-                    textcolor: const Color(0xFF000000),
-                    backcolor: const Color(0xFFBFA573),
-                    width: 150,
-                    radiuscolor: const Color(0xFFFFFFFF),
-                    fontsize: 16,
-                    radius: 5),
-              ],
-            ),
-          );
-        },
-      );
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
+  Widget renderWebView() {
+    if (Platform.isAndroid || Platform.isIOS) {
+      return Scaffold(
         backgroundColor: Colors.black,
         appBar: AppBar(
           leading: (_status == 'upgrading')
@@ -223,7 +227,7 @@ class _UpgradeViewState extends State<UpgradeView> with WidgetsBindingObserver {
           elevation: 0,
         ),
         body: SafeArea(
-          child: _isError && !_isWebViewLoaded
+          child: isError && !isWebViewLoaded
               ? const Center(
                   child: TextWidget(
                     text:
@@ -233,12 +237,12 @@ class _UpgradeViewState extends State<UpgradeView> with WidgetsBindingObserver {
                 )
               : Stack(
                   children: [
-                    _webViewController == null
+                    webViewMobile == null
                         ? const Center(
                             child:
                                 CircularProgressIndicator()) // Show a loading indicator while _controller is null
-                        : WebViewWidget(controller: _webViewController!),
-                    (_isDataReady)
+                        : WebViewWidget(controller: webViewMobile!),
+                    (isDataReady)
                         ? const Center(
                             child: CircularProgressIndicator(
                               color: Colors.white,
@@ -267,6 +271,30 @@ class _UpgradeViewState extends State<UpgradeView> with WidgetsBindingObserver {
         floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
         bottomNavigationBar: const Satoshinav(
           number: 3,
-        ));
+        ),
+      );
+    } else {
+      return (Scaffold(
+        backgroundColor: Colors.black,
+        body: Stack(
+          children: [
+            ((isWindowsWebViewReady)
+                ? Webview(
+                    webViewDesktop,
+                  )
+                : const Center(
+                    child: CircularProgressIndicator(
+                      color: Colors.white,
+                    ),
+                  )),
+          ],
+        ),
+      ));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return renderWebView();
   }
 }

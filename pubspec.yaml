@@ -43,7 +43,6 @@ dependencies:
   crypto: ^3.0.3
   google_fonts: ^6.2.0
   webview_flutter: ^4.8.0
-  flutter_inappwebview: ^6.0.0
   convex_bottom_bar: ^3.2.0
   url_launcher: ^6.3.0
   shared_preferences: ^2.2.3

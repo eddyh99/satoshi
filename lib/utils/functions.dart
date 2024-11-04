@@ -57,21 +57,6 @@ Future<String> satoshiAPI(Uri url, String body) async {
   return response.body;
 }
 
-// Future<dynamic> readAllPref() async {
-//   final prefs = await SharedPreferences.getInstance();
-//   final keys = prefs.getKeys();
-
-//   final prefsMap = <String, dynamic>{};
-//   for (String key in keys) {
-//     prefsMap[key] = prefs.get(key);
-//   }
-// }
-
-// readPrefStr(String key) async {
-//   final SharedPreferences pref = await SharedPreferences.getInstance();
-//   return jsonDecode(pref.getString(key)!);
-// }
-
 showLoaderDialog(BuildContext context) {
   AlertDialog alert = AlertDialog(
     backgroundColor: const Color.fromRGBO(30, 30, 30, 1),
