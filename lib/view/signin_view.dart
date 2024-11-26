@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:developer';
+import 'dart:io';
 
 import 'package:crypto/crypto.dart';
 import 'package:email_validator/email_validator.dart';
@@ -12,6 +13,7 @@ import 'package:satoshi/utils/globalvar.dart';
 import 'package:satoshi/view/widget/button_widget.dart';
 import 'package:satoshi/view/widget/text_widget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 
 class SigninView extends StatefulWidget {
   const SigninView({super.key});
@@ -60,6 +62,16 @@ class _SigninViewState extends State<SigninView> {
     }
 
     return null;
+  }
+
+  Future<void> _launchURL() async {
+    String url = "";
+    url = 'https://pnglobalinternational.com/member/auth/register';
+    if (await canLaunchUrlString(url)) {
+      await launchUrlString(url);
+    } else {
+      throw 'Could not launch $url';
+    }
   }
 
   @override
@@ -360,13 +372,13 @@ class _SigninViewState extends State<SigninView> {
                               if (result["message"]["membership"] ==
                                   "expired") {
                                 Get.toNamed(
-                                                "/front-screen/subscribe",
-                                                arguments: [
-                                                  {
-                                                    "email": _emailTextController.text,                                                    
-                                                  },
-                                                ],
-                                              );
+                                  "/front-screen/subscribe",
+                                  arguments: [
+                                    {
+                                      "email": _emailTextController.text,
+                                    },
+                                  ],
+                                );
                               } else {
                                 Get.toNamed("/front-screen/home");
                               }
@@ -395,31 +407,32 @@ class _SigninViewState extends State<SigninView> {
                       fontsize: 16,
                       radius: 5),
                   SizedBox(height: 8.h),
-                  RichText(
-                    text: TextSpan(
-                      children: [
-                        TextSpan(
-                          text: "Don't have an account? ",
-                          style: Theme.of(context)
-                              .textTheme
-                              .displayLarge
-                              ?.copyWith(fontSize: 12),
-                        ),
-                        TextSpan(
-                          text: 'Register',
-                          style: Theme.of(context)
-                              .textTheme
-                              .displayLarge
-                              ?.copyWith(
-                                  fontSize: 12, fontWeight: FontWeight.bold),
-                          recognizer: TapGestureRecognizer()
-                            ..onTap = () {
-                              Get.toNamed("/front-screen/register");
-                            },
-                        ),
-                      ],
+                  if (Platform.isAndroid)
+                    RichText(
+                      text: TextSpan(
+                        children: [
+                          TextSpan(
+                            text: "Don't have an account? ",
+                            style: Theme.of(context)
+                                .textTheme
+                                .displayLarge
+                                ?.copyWith(fontSize: 12),
+                          ),
+                          TextSpan(
+                            text: 'Register',
+                            style: Theme.of(context)
+                                .textTheme
+                                .displayLarge
+                                ?.copyWith(
+                                    fontSize: 12, fontWeight: FontWeight.bold),
+                            recognizer: TapGestureRecognizer()
+                              ..onTap = () {
+                                Get.toNamed("/front-screen/register");
+                              },
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
                 ]),
               ),
             ),

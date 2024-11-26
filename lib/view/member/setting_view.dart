@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -195,11 +196,22 @@ class _SettingViewState extends State<SettingView> {
                           icon: Icons.diamond_outlined,
                           text: 'Upgrade Subscription',
                           trailing: SizedBox.shrink(),
-                          onTap: () {
-                            Get.toNamed("/front-screen/upgrade-plan",
-                                arguments: [
-                                  {"email": email}
-                                ]);
+                          onTap: () async {
+                            if (Platform.isAndroid) {
+                              Get.toNamed("/front-screen/upgrade-plan",
+                                  arguments: [
+                                    {"email": email}
+                                  ]);
+                            }
+                            if (Platform.isIOS) {
+                              String url =
+                                  "https://pnglobalinternational.com/widget/subscription/upgrade/${email}";
+                              if (await canLaunchUrlString(url)) {
+                                await launchUrlString(url);
+                              } else {
+                                throw 'Could not launch $url';
+                              }
+                            }
                           },
                         ),
                         // const SizedBox(height: 8),
