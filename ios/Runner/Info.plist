@@ -2,10 +2,12 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>CADisableMinimumFrameDurationOnPhone</key>
+	<true/>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>Satoshi</string>
+	<string>Satoshi Signal</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -22,10 +24,32 @@
 	<string>????</string>
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
+	<key>FirebaseAppDelegateProxyEnabled</key>
+	<false/>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
-	<key>UILaunchStoryboardName</key>
-	<string>LaunchScreen</string>
+	<key>MinimumOSVersion</key>
+	<string>13.0</string>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+	</dict>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>This app needs access to location for notifications.</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>This app needs access to location for notifications.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>This app needs access to location for notifications.</string>
+	<key>NSPushNotificationUsageDescription</key>
+	<string>This app needs notifications to alert you about important updates.</string>
+	<key>UIApplicationSupportsIndirectInputEvents</key>
+	<true/>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>fetch</string>
+		<string>remote-notification</string>
+	</array>
 	<key>UIMainStoryboardFile</key>
 	<string>Main</string>
 	<key>UISupportedInterfaceOrientations</key>
@@ -41,38 +65,8 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
-	<key>CADisableMinimumFrameDurationOnPhone</key>
-	<true/>
-	<key>UIApplicationSupportsIndirectInputEvents</key>
-	<true/>
-	<!-- Enable Background Modes -->
-    <key>UIBackgroundModes</key>
-    <array>
-        <string>fetch</string>
-        <string>remote-notification</string>
-    </array>
+<key>UILaunchStoryboardName</key>
+<string>LaunchScreen</string>
 
-    <!-- Disable Firebase App Delegate Proxy, handled manually in AppDelegate.swift -->
-    <key>FirebaseAppDelegateProxyEnabled</key>
-    <false/>
-
-    <!-- App Transport Security Settings (if needed for arbitrary network requests) -->
-    <key>NSAppTransportSecurity</key>
-    <dict>
-        <key>NSAllowsArbitraryLoads</key>
-        <true/>
-    </dict>
-
-    <!-- Permissions for Location (optional, if your app needs location services) -->
-    <key>NSLocationWhenInUseUsageDescription</key>
-    <string>This app needs access to location for notifications.</string>
-    <key>NSLocationAlwaysUsageDescription</key>
-    <string>This app needs access to location for notifications.</string>
-    <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-    <string>This app needs access to location for notifications.</string>
-
-    <!-- Permissions for Notifications -->
-    <key>NSPushNotificationUsageDescription</key>
-    <string>This app needs notifications to alert you about important updates.</string>
 </dict>
 </plist>

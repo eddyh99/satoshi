@@ -45,20 +45,15 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
     lang = prefs.getString('selected_language') ?? 'en';
 
     // Only initialize FCM if running on Android or iOS
+    String? token = await FirebaseMessaging.instance.getToken();
+    log("FCM Token: $token");
     if (Platform.isAndroid || Platform.isIOS) {
-      FirebaseMessaging.instance.subscribeToTopic('signal').then((_) {
+      FirebaseMessaging.instance.subscribeToTopic('testing').then((_) {
         log("Successfully subscribed to topic 'signal'");
-      }).catchError((error) {
+      }).catchError((error, stackTrace) {
         log("Error subscribing to topic 'signal': $error");
+        log("Stack Trace: $stackTrace");
       });
-
-      String? fcmToken = await FirebaseMessaging.instance.getToken();
-      if (fcmToken != null) {
-        Map<String, dynamic> mdata = {'email': email, 'devicetoken': fcmToken};
-        var url = Uri.parse("$urlapi/v1/member/add_device");
-        await satoshiAPI(url, jsonEncode(mdata));
-        prefs.setString("devicetoken", fcmToken);
-      }
     } else {
       log("FCM is not supported on this platform.");
     }

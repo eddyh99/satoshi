@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:developer';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -9,6 +10,7 @@ import 'package:satoshi/utils/functions.dart';
 import 'package:satoshi/utils/globalvar.dart';
 import 'package:satoshi/view/widget/button_widget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 
 class LandingView extends StatefulWidget {
   const LandingView({super.key});
@@ -80,6 +82,16 @@ class _LandingViewState extends State<LandingView> {
     super.dispose();
   }
 
+  Future<void> _launchURL() async {
+    String url = "";
+    url = 'https://pnglobalinternational.com/member/auth/register';
+    if (await canLaunchUrlString(url)) {
+      await launchUrlString(url);
+    } else {
+      throw 'Could not launch $url';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -137,18 +149,19 @@ class _LandingViewState extends State<LandingView> {
             SizedBox(
               height: 1.h,
             ),
-            ButtonWidget(
-              text: "Register",
-              onTap: () {
-                Get.toNamed("/front-screen/register");
-              },
-              textcolor: const Color(0xFFFFFFFF),
-              backcolor: const Color(0x00000000),
-              width: 50.w,
-              radiuscolor: const Color(0xFFB48B3D),
-              fontsize: 16,
-              radius: 30,
-            )
+            if (Platform.isAndroid)
+              ButtonWidget(
+                text: "Register",
+                onTap: () {
+                  Get.toNamed("/front-screen/register");
+                },
+                textcolor: const Color(0xFFFFFFFF),
+                backcolor: const Color(0x00000000),
+                width: 50.w,
+                radiuscolor: const Color(0xFFB48B3D),
+                fontsize: 16,
+                radius: 30,
+              )
           ],
         )),
       ),

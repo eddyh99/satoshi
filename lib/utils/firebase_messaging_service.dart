@@ -109,26 +109,25 @@ class FirebaseMessagingService {
 
   // Initialize local notifications (public method)
   Future<void> initializeLocalNotifications() async {
-    const AndroidInitializationSettings initializationSettingsAndroid =
-        AndroidInitializationSettings(
-            '@mipmap/ic_launcher'); // Ensure you have a launcher icon
-    final DarwinInitializationSettings initializationSettingsDarwin =
-        DarwinInitializationSettings(
-            onDidReceiveLocalNotification: onDidReceiveLocalNotification);
+  const AndroidInitializationSettings initializationSettingsAndroid =
+      AndroidInitializationSettings('@mipmap/ic_launcher'); // Ensure you have a launcher icon
 
-    final InitializationSettings initializationSettings =
-        InitializationSettings(
-      android: initializationSettingsAndroid,
-      iOS: initializationSettingsDarwin,
-      macOS: initializationSettingsDarwin,
-    );
+  final DarwinInitializationSettings initializationSettingsDarwin =
+      DarwinInitializationSettings(); // No need for onDidReceiveLocalNotification
 
-    await _flutterLocalNotificationsPlugin.initialize(
-      initializationSettings,
-      onDidReceiveNotificationResponse: onDidReceiveNotificationResponse,
-    );
-    log('Local notification plugin initialized');
-  }
+  final InitializationSettings initializationSettings = InitializationSettings(
+    android: initializationSettingsAndroid,
+    iOS: initializationSettingsDarwin,
+    macOS: initializationSettingsDarwin,
+  );
+
+  await _flutterLocalNotificationsPlugin.initialize(
+    initializationSettings,
+    onDidReceiveNotificationResponse: onDidReceiveNotificationResponse,
+  );
+  log('Local notification plugin initialized');
+}
+
 
   // Callback for iOS foreground notifications
   Future<void> onDidReceiveLocalNotification(

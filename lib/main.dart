@@ -1,4 +1,5 @@
 import 'dart:developer';
+import 'dart:io';
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
@@ -31,15 +32,21 @@ void main() async {
   ]);
 
   // Initialize Firebase (for Android/iOS)
-  await Firebase.initializeApp(
-    options: const FirebaseOptions(
-      apiKey: 'AIzaSyDb3qJmaBk2Q2tK3sUeQWPZAfCnFORLLtM',
-      appId: '1:167593974745:android:71382cf6fa39b97507d7c8',
-      messagingSenderId: '167593974745',
-      projectId: 'satoshi-signal',
-      storageBucket: 'satoshi-signal.appspot.com',
-    ),
-  );
+  // Initialize Firebase only if it has not been initialized already
+  if (Platform.isAndroid) {
+    await Firebase.initializeApp(
+      options: const FirebaseOptions(
+        apiKey: 'AIzaSyDb3qJmaBk2Q2tK3sUeQWPZAfCnFORLLtM',
+        appId: '1:167593974745:android:71382cf6fa39b97507d7c8',
+        messagingSenderId: '167593974745',
+        projectId: 'satoshi-signal',
+        storageBucket: 'satoshi-signal.appspot.com',
+      ),
+    );
+  } else if (Platform.isIOS) {
+    // iOS Firebase initialization will automatically pick up GoogleService-Info.plist
+    await Firebase.initializeApp();
+  }
 
   // Initialize Firebase Analytics
   FirebaseAnalytics analytics = FirebaseAnalytics.instance;
