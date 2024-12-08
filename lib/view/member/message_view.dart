@@ -8,6 +8,7 @@ import 'package:satoshi/view/widget/button_widget.dart';
 import 'package:satoshi/view/widget/text_widget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class MessageView extends StatefulWidget {
   const MessageView({super.key});
@@ -35,14 +36,36 @@ class _MessageViewState extends State<MessageView> with WidgetsBindingObserver {
   late final DateTime _loadStartTime;
   static const Duration _initialLoadTimeout = Duration(seconds: 20);
   late final StreamSubscription _eventBusSubscription;
+  String selectedLanguage = 'en'; // Default language is English
+
+// List of supported languages, their codes, and corresponding country codes
+  final List<Map<String, String>> languages = [
+    {'name': 'Deutsch', 'code': 'de', 'countryCode': 'de'},
+    {'name': 'English', 'code': 'en', 'countryCode': 'gb'},
+    {'name': 'Español', 'code': 'es', 'countryCode': 'es'},
+    {'name': 'Français', 'code': 'fr', 'countryCode': 'fr'},
+    {'name': 'हिंदी', 'code': 'hi', 'countryCode': 'in'},
+    {'name': 'Bahasa Indonesia', 'code': 'id', 'countryCode': 'id'},
+    {'name': 'Português', 'code': 'pt', 'countryCode': 'pt'},
+    {'name': 'Русский', 'code': 'ru', 'countryCode': 'ru'},
+    {'name': 'Italian', 'code': 'it', 'countryCode': 'it'},
+    {'name': 'Arabic', 'code': 'ar', 'countryCode': 'sa'},
+    {'name': 'Chinese', 'code': 'zh-CN', 'countryCode': 'cn'},
+    {'name': 'Japanese', 'code': 'ja', 'countryCode': 'jp'},
+    {'name': 'Turkish', 'code': 'tr', 'countryCode': 'tr'},
+  ];
 
   Future<dynamic> getPrefer() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     lang = prefs.getString('selected_language') ?? 'en';
 
+    // Set the selected language for the dropdown
+    setState(() {
+      selectedLanguage = lang; // Update the selectedLanguage variable
+    });
     // Update the URL after getting preferences
     urltranslated =
-        "https://translate.google.com/translate?sl=auto&tl=en&hl=en&u=https://pnglobalinternational.com/widget/message";
+        "https://translate.google.com/translate?sl=auto&tl=$lang&hl=$lang&u=https://pnglobalinternational.com/widget/message";
 
     // Initialize the WebViewController after lang is updated
     setState(() {
@@ -57,7 +80,7 @@ class _MessageViewState extends State<MessageView> with WidgetsBindingObserver {
               _webViewController!.runJavaScript('''
                 (function() {
                   var style = document.createElement('style');
-                  style.innerHTML = '.goog-te-banner-frame, #gt-nvframe { display: block !important; }';
+                  style.innerHTML = '.goog-te-banner-frame, #gt-nvframe { display: none !important; }';
                   document.head.appendChild(style);
                 })();
               ''');
@@ -74,12 +97,12 @@ class _MessageViewState extends State<MessageView> with WidgetsBindingObserver {
                 (function() {
                   var translateBar = document.querySelector('.goog-te-banner-frame');
                   if (translateBar) {
-                    translateBar.style.display = 'block';
+                    translateBar.style.display = 'none';
                   }
 
                   var iframe = document.getElementById('gt-nvframe');
                   if (iframe) {
-                    iframe.style.display = 'block'; // Hide iframe if found
+                    iframe.style.display = 'none'; // Hide iframe if found
                   }
                   document.body.style.top = '0px'; // Adjust body top to avoid gap
                 })();
@@ -211,9 +234,70 @@ class _MessageViewState extends State<MessageView> with WidgetsBindingObserver {
     }
   }
 
+  Future<void> _savePreferences(String languageCode) async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString('selected_language', languageCode);
+  }
+
+  void _updateTranslationUrl() {
+    urltranslated =
+        "https://translate.google.com/translate?sl=auto&tl=$selectedLanguage&hl=$selectedLanguage&u=https://pnglobalinternational.com/widget/message";
+
+    // Reload the WebView with the updated URL
+    _webViewController?.loadRequest(Uri.parse(urltranslated));
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+        appBar: AppBar(
+          backgroundColor:
+              Colors.black, // Set the background color of the AppBar
+          automaticallyImplyLeading: false, // Remove the back arrow
+          actions: [
+            Expanded(
+              child: Row(
+                mainAxisAlignment:
+                    MainAxisAlignment.center, // Center the DropdownButton
+                children: [
+                  DropdownButton<String>(
+                    value: selectedLanguage,
+                    icon: const Icon(Icons.language, color: Colors.white),
+                    dropdownColor: Colors.black,
+                    items: languages.map((language) {
+                      return DropdownMenuItem<String>(
+                        value: language['code'],
+                        child: Row(
+                          children: [
+                            SvgPicture.asset(
+                              'packages/country_icons/icons/flags/svg/${language['countryCode']}.svg',
+                              width: 24,
+                              height: 24,
+                            ),
+                            const SizedBox(width: 10),
+                            Text(
+                              language['name']!,
+                              style: const TextStyle(color: Colors.white),
+                            ),
+                          ],
+                        ),
+                      );
+                    }).toList(),
+                    onChanged: (value) {
+                      if (value != null) {
+                        setState(() {
+                          selectedLanguage = value;
+                        });
+                        _savePreferences(selectedLanguage);
+                        _updateTranslationUrl();
+                      }
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
         backgroundColor: Colors.black,
         body: SafeArea(
           child: _isError && !_isWebViewLoaded

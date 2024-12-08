@@ -53,8 +53,11 @@ dependencies:
   flutter_local_notifications: ^18.0.0
   vibration: ^2.0.0
   event_bus: ^2.0.0
-  msix: ^3.16.8
   webview_windows: ^0.4.0
+  pinput: ^5.0.0
+  country_icons: ^3.0.0
+  flutter_svg: ^2.0.16
+  in_app_purchase: ^3.2.0
   
 dev_dependencies:
   flutter_test:
@@ -71,14 +74,7 @@ dev_dependencies:
 # following page: https://dart.dev/tools/pub/pubspec
 
 # The following section is specific to Flutter packages.
-msix_config:
-  name: 'Satoshi Signal'
-  version: '1.0.1.3'
-  display_name: 'Satoshi Signal'
-  publisher_display_name: 'PN Global International'
-  identity_name: 'PNGlobalInternational.SatoshiSignal'
-  publisher: 'CN=3FE2051F-B749-4724-9841-DE2F7FC450EB'
-  architecture: 'x64'
+
 
 
 flutter:

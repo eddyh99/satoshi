@@ -9,6 +9,7 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:satoshi/utils/firebase_messaging_service.dart';
+import 'package:satoshi/view/confirmation_view.dart';
 import 'package:satoshi/view/forgot_pass/forgotpass_view.dart';
 import 'package:satoshi/view/forgot_pass/newpass_view.dart';
 import 'package:satoshi/view/landing_view.dart';
@@ -105,6 +106,11 @@ class MyApp extends StatelessWidget {
             name: '/front-screen/register',
             page: () => const RegisterView(),
             transition: Transition.noTransition,
+          ),
+          GetPage(
+            name: '/front-screen/confirm',
+            page: () => const ConfirmationView(),
+            transition: Transition.noTransition,            
           ),
           GetPage(
             name: '/front-screen/subscribe',

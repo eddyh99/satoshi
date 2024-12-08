@@ -66,30 +66,33 @@ class _SubscribeViewState extends State<SubscribeView> {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: Scaffold(
-        extendBodyBehindAppBar: true,
-        backgroundColor: Colors.black,
-        body: SafeArea(
-          child: WebViewWidget(controller: wvcontroller),
-        ),
-        floatingActionButton: (_status == 'success')
-            ? FloatingActionButton.extended(
-                onPressed: () {
-                  Get.toNamed(
-                    "/front-screen/login",
-                  );
-                },
-                icon: const Icon(Icons.login_outlined),
-                label: Text(
-                  "Re Login",
-                  style: TextStyle(fontSize: 18),
-                ),
-                backgroundColor: const Color(0xFFBFA573),
-                foregroundColor: Colors.black,
-              )
-            : SizedBox.shrink(),
-        floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      ),
+      home: PopScope(
+          canPop: false, // Prevents the page from being popped
+          child: Scaffold(
+            extendBodyBehindAppBar: true,
+            backgroundColor: Colors.black,
+            body: SafeArea(
+              child: WebViewWidget(controller: wvcontroller),
+            ),
+            floatingActionButton: (_status == 'success')
+                ? FloatingActionButton.extended(
+                    onPressed: () {
+                      Get.toNamed(
+                        "/front-screen/login",
+                      );
+                    },
+                    icon: const Icon(Icons.login_outlined),
+                    label: Text(
+                      "Re Login",
+                      style: TextStyle(fontSize: 18),
+                    ),
+                    backgroundColor: const Color(0xFFBFA573),
+                    foregroundColor: Colors.black,
+                  )
+                : SizedBox.shrink(),
+            floatingActionButtonLocation:
+                FloatingActionButtonLocation.centerFloat,
+          )),
     );
   }
 }

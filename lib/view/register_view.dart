@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:developer';
+import 'dart:io';
 import 'package:crypto/crypto.dart';
 import 'package:email_validator/email_validator.dart';
 import 'package:flutter/gestures.dart';
@@ -536,6 +537,12 @@ class _RegisterViewState extends State<RegisterView> {
                                         if (_signupFormKey.currentState!
                                             .validate()) {
                                           Map<String, dynamic> mdata;
+                                          var from;
+                                          if (Platform.isAndroid) {
+                                            from = "Android";
+                                          } else {
+                                            from = "iOS";
+                                          }
                                           mdata = {
                                             'email': _emailTextController.text,
                                             'password': sha1
@@ -544,6 +551,7 @@ class _RegisterViewState extends State<RegisterView> {
                                                         .text))
                                                 .toString(),
                                             "ipaddress": _ipAddress,
+                                            "from": from,
                                             "referral":
                                                 _refTextController.text.isEmpty
                                                     ? null
@@ -565,7 +573,7 @@ class _RegisterViewState extends State<RegisterView> {
                                                     "$urlbase/auth/send_activation/${Uri.encodeComponent(email)}?token=${result['message']['token']}"),
                                               );
                                               Get.toNamed(
-                                                "/front-screen/subscribe",
+                                                "/front-screen/confirm",
                                                 arguments: [
                                                   {
                                                     "email": email,

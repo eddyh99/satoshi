@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get/get.dart';
 import 'package:satoshi/utils/extensions.dart';
@@ -38,6 +39,7 @@ class _SettingViewState extends State<SettingView> {
   late String lang = "en";
   String body = '';
   dynamic resultData;
+  TextEditingController _controller = TextEditingController();
 
   Future<void> _launchURL(tipe) async {
     String url = "";
@@ -161,6 +163,48 @@ class _SettingViewState extends State<SettingView> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        const TextWidget(
+                          text: "Your Referral Link",
+                          fontsize: 16,
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: TextField(
+                                controller: _controller,
+                                style: TextStyle(color: Colors.white),
+                                enabled: false,
+                                decoration: InputDecoration(
+                                  filled: true,
+                                  fillColor: Colors.white,
+                                  hintText:
+                                      'https://pnglobalinternational.com/homepage/satoshi_price?ref=xxx',
+                                  hintStyle: TextStyle(color: Colors.black),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  // Adjust content padding to reduce height
+                                  contentPadding: EdgeInsets.symmetric(
+                                      vertical: 5.0, horizontal: 12.0),
+                                ),
+                              ),
+                            ),
+                            IconButton(
+                              icon: Icon(Icons.copy, color: Colors.amber),
+                              onPressed: () {
+                                Clipboard.setData(
+                                    ClipboardData(text: _controller.text));
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                      content: Text('Copied to Clipboard')),
+                                );
+                              },
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 10),
+
                         const TextWidget(
                           text: "Subscription",
                           fontsize: 16,
