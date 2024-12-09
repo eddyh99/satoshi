@@ -347,6 +347,7 @@ class _SigninViewState extends State<SigninView> {
                                       .convert(utf8
                                           .encode(_passwordTextController.text))
                                       .toString());
+                              prefs.setString("refcode", result["message"]["refcode"]);
                               prefs.setString("id", result["message"]["id"]);
                               prefs.setString("end_date",
                                   result["message"]["end_date"] ?? "");

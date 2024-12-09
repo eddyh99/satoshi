@@ -3,7 +3,6 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get/get.dart';
 import 'package:satoshi/utils/extensions.dart';
 import 'package:satoshi/utils/firebase_messaging_service.dart';
@@ -28,6 +27,7 @@ class SettingView extends StatefulWidget {
 class _SettingViewState extends State<SettingView> {
   dynamic email;
   dynamic idRef;
+  dynamic refcode;
   bool _isLoading = true;
   DateTime? currentDate;
   DateTime? endDate;
@@ -62,6 +62,7 @@ class _SettingViewState extends State<SettingView> {
     email = prefs.getString("email")!;
     idRef = prefs.getString("id_referral")!;
     lang = prefs.getString('selected_language') ?? 'en';
+    refcode= prefs.getString("refcode") ?? '';
 
     setState(() {
       // _isLoading = false;
@@ -179,7 +180,7 @@ class _SettingViewState extends State<SettingView> {
                                   filled: true,
                                   fillColor: Colors.white,
                                   hintText:
-                                      'https://pnglobalinternational.com/homepage/satoshi_price?ref=xxx',
+                                      refcode,
                                   hintStyle: TextStyle(color: Colors.black),
                                   border: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(8),

@@ -79,59 +79,60 @@ class _InappViewState extends State<InappView> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text('Subscribe')),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Please choose your subscription',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+    return PopScope(
+        canPop: false,
+        child: Scaffold(
+          backgroundColor: Colors.black,
+          body: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Please choose your subscription',
+                    style: const TextStyle(color: Colors.white, fontSize: 12)),
+                SizedBox(height: 20),
+                ..._plans.map((plan) {
+                  int index = _plans.indexOf(plan);
+                  return GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        _selectedPlanIndex = index;
+                      });
+                    },
+                    child: Container(
+                      margin: EdgeInsets.symmetric(vertical: 8),
+                      padding: EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: _selectedPlanIndex == index
+                            ? Color(0xb48b3d00)
+                            : Color(0xbfa57300),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(plan.name,
+                              style: TextStyle(color: Colors.white)),
+                          Text('€ ${plan.price}',
+                              style: TextStyle(color: Colors.white)),
+                        ],
+                      ),
+                    ),
+                  );
+                }).toList(),
+                SizedBox(height: 20),
+                ElevatedButton(
+                  onPressed: _isLoading || _selectedPlanIndex == null
+                      ? null
+                      : () => _handleSubscription(_plans[_selectedPlanIndex!]),
+                  child: _isLoading
+                      ? CircularProgressIndicator(color: Colors.white)
+                      : Text('Subscribe'),
+                )
+              ],
             ),
-            SizedBox(height: 20),
-            ..._plans.map((plan) {
-              int index = _plans.indexOf(plan);
-              return GestureDetector(
-                onTap: () {
-                  setState(() {
-                    _selectedPlanIndex = index;
-                  });
-                },
-                child: Container(
-                  margin: EdgeInsets.symmetric(vertical: 8),
-                  padding: EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: _selectedPlanIndex == index
-                        ? Colors.brown.shade700
-                        : Colors.brown.shade300,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(plan.name, style: TextStyle(color: Colors.white)),
-                      Text('€ ${plan.price}',
-                          style: TextStyle(color: Colors.white)),
-                    ],
-                  ),
-                ),
-              );
-            }).toList(),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _isLoading || _selectedPlanIndex == null
-                  ? null
-                  : () => _handleSubscription(_plans[_selectedPlanIndex!]),
-              child: _isLoading
-                  ? CircularProgressIndicator(color: Colors.white)
-                  : Text('Subscribe'),
-            ),
-          ],
-        ),
-      ),
-    );
+          ),
+        ));
   }
 }
 
