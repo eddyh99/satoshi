@@ -149,19 +149,18 @@ class _LandingViewState extends State<LandingView> {
             SizedBox(
               height: 1.h,
             ),
-            if (Platform.isAndroid)
-              ButtonWidget(
-                text: "Register",
-                onTap: () {
-                  Get.toNamed("/front-screen/register");
-                },
-                textcolor: const Color(0xFFFFFFFF),
-                backcolor: const Color(0x00000000),
-                width: 50.w,
-                radiuscolor: const Color(0xFFB48B3D),
-                fontsize: 16,
-                radius: 30,
-              )
+            ButtonWidget(
+              text: "Register",
+              onTap: () {
+                Get.toNamed("/front-screen/register");
+              },
+              textcolor: const Color(0xFFFFFFFF),
+              backcolor: const Color(0x00000000),
+              width: 50.w,
+              radiuscolor: const Color(0xFFB48B3D),
+              fontsize: 16,
+              radius: 30,
+            )
           ],
         )),
       ),

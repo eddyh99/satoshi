@@ -12,6 +12,7 @@ import 'package:satoshi/utils/firebase_messaging_service.dart';
 import 'package:satoshi/view/confirmation_view.dart';
 import 'package:satoshi/view/forgot_pass/forgotpass_view.dart';
 import 'package:satoshi/view/forgot_pass/newpass_view.dart';
+import 'package:satoshi/view/inapp_view.dart';
 import 'package:satoshi/view/landing_view.dart';
 import 'package:satoshi/view/member/history_view.dart';
 import 'package:satoshi/view/member/home_view.dart';
@@ -110,13 +111,17 @@ class MyApp extends StatelessWidget {
           GetPage(
             name: '/front-screen/confirm',
             page: () => const ConfirmationView(),
-            transition: Transition.noTransition,            
+            transition: Transition.noTransition,
           ),
           GetPage(
             name: '/front-screen/subscribe',
             page: () => const SubscribeView(),
             transition: Transition.rightToLeft,
           ),
+          GetPage(
+              name: '/front-screen/inapp',
+              page: () => const InappView(),
+              transition: Transition.fadeIn),
           GetPage(
               name: '/front-screen/home',
               page: () => const HomeView(),

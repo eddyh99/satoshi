@@ -526,7 +526,7 @@ class _RegisterViewState extends State<RegisterView> {
                                       ),
                                     ),
                                     ButtonWidget(
-                                      text: "Continue",
+                                      text: "Register",
                                       onTap: () async {
                                         // showLoaderDialog(context);
                                         // printDebug(context.mounted);

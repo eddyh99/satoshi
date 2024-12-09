@@ -19,10 +19,10 @@ class _InappViewState extends State<InappView> {
       []; // List to hold product details from in-app purchases
 
   final List<SubscriptionPlan> _plans = [
-    SubscriptionPlan('1 Year', 2400, '1 Year Regular', 'year_plan_id'),
-    SubscriptionPlan('6 Month', 1350, '6 Month Regular', 'six_month_plan_id'),
-    SubscriptionPlan('3 Month', 700, '3 Month Regular', 'three_month_plan_id'),
-    SubscriptionPlan('1 Month', 300, '1 Month Regular', 'one_month_plan_id'),
+    SubscriptionPlan(
+        '3 Month', 700, '3 Month Regular', 'app.satoshisignal.3month'),
+    SubscriptionPlan(
+        '1 Month', 300, '1 Month Regular', 'app.satoshisignal.monthly'),
   ];
 
   @override

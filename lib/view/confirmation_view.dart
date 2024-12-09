@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:developer';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:pinput/pinput.dart';
@@ -87,12 +88,22 @@ class _ConfirmationViewState extends State<ConfirmationView> {
                               var result =
                                   jsonDecode(await satoshiAPI(url, ""));
                               if (result["code"] == "200") {
-                                Get.toNamed("/front-screen/subscribe",
-                                    arguments: [
-                                      {
-                                        "email": email,
-                                      },
-                                    ]);
+                                if (Platform.isAndroid) {
+                                  Get.toNamed("/front-screen/subscribe",
+                                      arguments: [
+                                        {
+                                          "email": email,
+                                        },
+                                      ]);
+                                }
+                                if (Platform.isIOS) {
+                                  Get.toNamed("/front-screen/inapp",
+                                      arguments: [
+                                        {
+                                          "email": email,
+                                        },
+                                      ]);
+                                }
                               } else {
                                 var psnerr = result['message'];
                                 Navigator.pop(context);
