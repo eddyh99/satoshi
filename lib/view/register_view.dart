@@ -532,7 +532,7 @@ class _RegisterViewState extends State<RegisterView> {
                                         // printDebug(context.mounted);
                                         if (!_signupFormKey.currentState!
                                             .validate()) {
-                                          // Navigator.pop(context);
+                                          return; // Skip if the form is not valid
                                         }
                                         if (_signupFormKey.currentState!
                                             .validate()) {
@@ -554,14 +554,16 @@ class _RegisterViewState extends State<RegisterView> {
                                             "from": from,
                                             "referral":
                                                 _refTextController.text.isEmpty
-                                                    ? null
+                                                    ? ""
                                                     : _refTextController.text
                                           };
+
                                           var url = Uri.parse(
                                               "$urlapi/auth/register");
                                           await satoshiAPI(
                                                   url, jsonEncode(mdata))
                                               .then((ress) {
+                                            log("Request Data: $ress");
                                             var result = jsonDecode(ress);
                                             if (result['code'] == '201') {
                                               dynamic email =
@@ -581,14 +583,20 @@ class _RegisterViewState extends State<RegisterView> {
                                                 ],
                                               );
                                             } else {
-                                              var psnerr = result['message'];
-                                              Navigator.pop(context);
+                                              var psnerr =
+                                                  "This Email(s) is already registered";
+                                              if (Navigator.canPop(context)) {
+                                                Navigator.pop(context);
+                                              }
                                               showAlert(psnerr, context);
                                             }
                                           }).catchError((err) {
-                                            Navigator.pop(context);
+                                            if (Navigator.canPop(context)) {
+                                              Navigator.pop(context);
+                                            }
+
                                             showAlert(
-                                              "Something Wrong, Please Contact Administrator",
+                                              err.toString(),
                                               context,
                                             );
                                           });

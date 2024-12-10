@@ -81,7 +81,8 @@ class _InappViewState extends State<InappView> {
   Widget build(BuildContext context) {
     return PopScope(
         canPop: false,
-        child: Scaffold(
+        child: SafeArea(
+            child: Scaffold(
           backgroundColor: Colors.black,
           body: Padding(
             padding: const EdgeInsets.all(16.0),
@@ -89,7 +90,7 @@ class _InappViewState extends State<InappView> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text('Please choose your subscription',
-                    style: const TextStyle(color: Colors.white, fontSize: 12)),
+                    style: const TextStyle(color: Colors.white, fontSize: 20)),
                 SizedBox(height: 20),
                 ..._plans.map((plan) {
                   int index = _plans.indexOf(plan);
@@ -132,7 +133,7 @@ class _InappViewState extends State<InappView> {
               ],
             ),
           ),
-        ));
+        )));
   }
 }
 

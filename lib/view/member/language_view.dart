@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:satoshi/view/widget/text_widget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -36,7 +38,6 @@ class _LanguageViewState extends State<LanguageView>
   void initState() {
     super.initState();
     _loadSelectedLanguage();
-    WidgetsBinding.instance.addObserver(this);
   }
 
   Future<void> _loadSelectedLanguage() async {
@@ -85,15 +86,17 @@ class _LanguageViewState extends State<LanguageView>
               title: TextWidget(
                   text: '${language['name']} (${language['code']})',
                   fontsize: 16),
-              trailing: selectedLanguage == language['code']
-                  ? const Icon(Icons.check, color: Colors.blue)
-                  : null,
               onTap: () async {
-                setState(() {
-                  selectedLanguage = language['code']!;
-                });
-                await _saveSelectedLanguage(
-                    language['code']!); // Save selection
+                try {
+                  setState(() {
+                    selectedLanguage = language['code']!;
+                  });
+                  await _saveSelectedLanguage(
+                      selectedLanguage); // Save selection
+                  log('Selected language: $selectedLanguage');
+                } catch (e) {
+                  log('Error: $e');
+                }
               },
             );
           },
