@@ -57,18 +57,16 @@ class _MessageViewState extends State<MessageView> with WidgetsBindingObserver {
 
   Future<dynamic> getPrefer() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    lang = prefs.getString('selected_language') ?? 'en';
-
-    // Set the selected language for the dropdown
+    final savedLang =
+        prefs.getString('selected_language') ?? 'en'; // Default to 'en'
+    log('Loaded language from preferences: $savedLang');
     setState(() {
-      selectedLanguage = lang; // Update the selectedLanguage variable
-    });
-    // Update the URL after getting preferences
-    urltranslated =
-        "https://translate.google.com/translate?sl=auto&tl=$lang&hl=$lang&u=https://pnglobalinternational.com/widget/message";
+      lang = savedLang; // Update language from preferences
+      selectedLanguage = savedLang; // Sync with dropdown
+      // Update the URL after getting preferences
+      urltranslated =
+          "https://translate.google.com/translate?sl=auto&tl=$lang&hl=$lang&u=https://pnglobalinternational.com/widget/message";
 
-    // Initialize the WebViewController after lang is updated
-    setState(() {
       _webViewController = WebViewController()
         ..setJavaScriptMode(JavaScriptMode.unrestricted)
         ..setBackgroundColor(const Color(0x00000000))
@@ -149,7 +147,8 @@ class _MessageViewState extends State<MessageView> with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
-    getPrefer(); // Fetch preferences before initializing the WebView
+    log('Initializing MessageView...');
+    getPrefer(); // Fetch and apply preferences during initialization
     WidgetsBinding.instance.addObserver(this);
     _eventBusSubscription = eventBus.on<ReloadWebViewEvent>().listen((event) {
       log('ReloadWebViewEvent received. Reloading WebView...');
@@ -237,14 +236,52 @@ class _MessageViewState extends State<MessageView> with WidgetsBindingObserver {
   Future<void> _savePreferences(String languageCode) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setString('selected_language', languageCode);
+    final cek = prefs.getString('selected_language');
+    log('isi pref language:$cek');
   }
 
   void _updateTranslationUrl() {
     urltranslated =
         "https://translate.google.com/translate?sl=auto&tl=$selectedLanguage&hl=$selectedLanguage&u=https://pnglobalinternational.com/widget/message";
 
-    // Reload the WebView with the updated URL
-    _webViewController?.loadRequest(Uri.parse(urltranslated));
+    setState(() {
+      // Reinitialize WebViewController with the new URL
+      _webViewController = WebViewController()
+        ..setJavaScriptMode(JavaScriptMode.unrestricted)
+        ..setBackgroundColor(const Color(0x00000000))
+        ..clearCache()
+        ..enableZoom(false)
+        ..setNavigationDelegate(
+          NavigationDelegate(
+            onPageStarted: (String url) {
+              log("Page started loading: $url");
+            },
+            onPageFinished: (String url) {
+              log("Page finished loading: $url");
+
+              // Inject JavaScript to hide Google Translate bar
+              _webViewController!.runJavaScript('''
+              (function() {
+                var translateBar = document.querySelector('.goog-te-banner-frame');
+                if (translateBar) {
+                  translateBar.style.display = 'none';
+                }
+
+                var iframe = document.getElementById('gt-nvframe');
+                if (iframe) {
+                  iframe.style.display = 'none'; // Hide iframe if found
+                }
+                document.body.style.top = '0px'; // Adjust body top to avoid gap
+              })();
+            ''');
+            },
+            onWebResourceError: (error) {
+              log("Page resource error: ${error.description}");
+            },
+          ),
+        )
+        ..loadRequest(Uri.parse(urltranslated));
+    });
   }
 
   @override
@@ -261,38 +298,40 @@ class _MessageViewState extends State<MessageView> with WidgetsBindingObserver {
                     MainAxisAlignment.center, // Center the DropdownButton
                 children: [
                   DropdownButton<String>(
-                    value: selectedLanguage,
-                    icon: const Icon(Icons.language, color: Colors.white),
-                    dropdownColor: Colors.black,
-                    items: languages.map((language) {
-                      return DropdownMenuItem<String>(
-                        value: language['code'],
-                        child: Row(
-                          children: [
-                            SvgPicture.asset(
-                              'packages/country_icons/icons/flags/svg/${language['countryCode']}.svg',
-                              width: 24,
-                              height: 24,
-                            ),
-                            const SizedBox(width: 10),
-                            Text(
-                              language['name']!,
-                              style: const TextStyle(color: Colors.white),
-                            ),
-                          ],
-                        ),
-                      );
-                    }).toList(),
-                    onChanged: (value) {
-                      if (value != null) {
-                        setState(() {
-                          selectedLanguage = value;
-                        });
-                        _savePreferences(selectedLanguage);
-                        _updateTranslationUrl();
-                      }
-                    },
-                  ),
+                      value: selectedLanguage,
+                      icon: const Icon(Icons.language, color: Colors.white),
+                      dropdownColor: Colors.black,
+                      items: languages.map((language) {
+                        return DropdownMenuItem<String>(
+                          value: language['code'],
+                          child: Row(
+                            children: [
+                              SvgPicture.asset(
+                                'packages/country_icons/icons/flags/svg/${language['countryCode']}.svg',
+                                width: 24,
+                                height: 24,
+                              ),
+                              const SizedBox(width: 10),
+                              Text(
+                                language['name']!,
+                                style: const TextStyle(color: Colors.white),
+                              ),
+                            ],
+                          ),
+                        );
+                      }).toList(),
+                      onChanged: (value) async {
+                        if (value != null) {
+                          setState(() {
+                            selectedLanguage = value;
+                          });
+                          await _savePreferences(selectedLanguage);
+                          setState(() {
+                            lang = selectedLanguage; // Ensure lang is updated
+                          });
+                          _updateTranslationUrl(); // Reload the WebView with the new language
+                        }
+                      }),
                 ],
               ),
             ),

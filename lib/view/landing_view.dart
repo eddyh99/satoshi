@@ -42,7 +42,6 @@ class _LandingViewState extends State<LandingView> {
           prefs.setString('period', result["message"]["total_period"]);
           prefs.setString('amount', result["message"]["amount"]);
           prefs.setString('devicetoken', result["message"]["devicetoken"]);
-          prefs.setString('selected_language', "en");
           if (result["message"]["id_referral"] == null) {
             prefs.setString("id_referral", "null");
           } else {
