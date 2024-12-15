@@ -373,14 +373,22 @@ class _SigninViewState extends State<SigninView> {
                                   result["message"]["membership"]);
                               if (result["message"]["membership"] ==
                                   "expired") {
-                                Get.toNamed(
-                                  "/front-screen/subscribe",
-                                  arguments: [
-                                    {
-                                      "email": _emailTextController.text,
-                                    },
-                                  ],
-                                );
+                                if (Platform.isAndroid) {
+                                  Get.toNamed("/front-screen/subscribe",
+                                      arguments: [
+                                        {
+                                          "email": _emailTextController.text,
+                                        },
+                                      ]);
+                                }
+                                if (Platform.isIOS) {
+                                  Get.toNamed("/front-screen/inapp",
+                                      arguments: [
+                                        {
+                                          "email": _emailTextController.text,
+                                        },
+                                      ]);
+                                }
                               } else {
                                 Get.toNamed("/front-screen/home");
                               }
@@ -411,32 +419,31 @@ class _SigninViewState extends State<SigninView> {
                       fontsize: 16,
                       radius: 5),
                   SizedBox(height: 8.h),
-                  if (Platform.isAndroid)
-                    RichText(
-                      text: TextSpan(
-                        children: [
-                          TextSpan(
-                            text: "Don't have an account? ",
-                            style: Theme.of(context)
-                                .textTheme
-                                .displayLarge
-                                ?.copyWith(fontSize: 12),
-                          ),
-                          TextSpan(
-                            text: 'Register',
-                            style: Theme.of(context)
-                                .textTheme
-                                .displayLarge
-                                ?.copyWith(
-                                    fontSize: 12, fontWeight: FontWeight.bold),
-                            recognizer: TapGestureRecognizer()
-                              ..onTap = () {
-                                Get.toNamed("/front-screen/register");
-                              },
-                          ),
-                        ],
-                      ),
+                  RichText(
+                    text: TextSpan(
+                      children: [
+                        TextSpan(
+                          text: "Don't have an account? ",
+                          style: Theme.of(context)
+                              .textTheme
+                              .displayLarge
+                              ?.copyWith(fontSize: 12),
+                        ),
+                        TextSpan(
+                          text: 'Register',
+                          style: Theme.of(context)
+                              .textTheme
+                              .displayLarge
+                              ?.copyWith(
+                                  fontSize: 12, fontWeight: FontWeight.bold),
+                          recognizer: TapGestureRecognizer()
+                            ..onTap = () {
+                              Get.toNamed("/front-screen/register");
+                            },
+                        ),
+                      ],
                     ),
+                  ),
                 ]),
               ),
             ),

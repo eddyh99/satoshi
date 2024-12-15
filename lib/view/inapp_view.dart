@@ -74,48 +74,13 @@ class _InappViewState extends State<InappView> {
         _removeLoader();
       } else if (purchaseDetails.status == PurchaseStatus.pending) {
         log('Purchase pending for product: ${purchaseDetails.productID}');
+        _showPendingPurchaseDialog();
+
         // Optionally notify the user about pending status
       } else if (purchaseDetails.status == PurchaseStatus.canceled) {
         log('Purchase canceled: ${purchaseDetails.productID}');
         _removeLoader();
       }
-    }
-  }
-
-  Future<void> _restorePendingPurchases() async {
-    setState(() {
-      _isLoading = true;
-    });
-
-    try {
-      final Stream<List<PurchaseDetails>> purchaseStream =
-          _inAppPurchase.purchaseStream;
-
-      purchaseStream.listen((purchaseDetailsList) async {
-        for (var purchaseDetails in purchaseDetailsList) {
-          log('Restored purchase: ${purchaseDetails.productID}, status: ${purchaseDetails.status}');
-
-          if (purchaseDetails.status == PurchaseStatus.purchased ||
-              purchaseDetails.status == PurchaseStatus.restored) {
-            // Deliver the product and complete the transaction
-            _deliverProduct(purchaseDetails);
-            await _inAppPurchase.completePurchase(purchaseDetails);
-          } else if (purchaseDetails.status == PurchaseStatus.pending) {
-            log('Pending purchase found: ${purchaseDetails.productID}');
-            await _inAppPurchase.completePurchase(purchaseDetails);
-          } else if (purchaseDetails.status == PurchaseStatus.error) {
-            log('Purchase error: ${purchaseDetails.error}');
-          }
-        }
-      });
-
-      log('Restore purchase triggered successfully');
-    } catch (e) {
-      log('Error while restoring purchases: $e');
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
     }
   }
 
@@ -136,19 +101,22 @@ class _InappViewState extends State<InappView> {
     await satoshiAPI(url, jsonEncode(mdata)).then((ress) {
       log("Request Data: $ress");
       var result = jsonDecode(ress);
-      if (result['code'] == '201') {
-        // Handle successful validation
-        log('Subscription registered successfully');
+      log(result['code']);
 
-        // Complete the purchase transaction
-        _inAppPurchase.completePurchase(purchaseDetails);
+      if (result['code'] == '201') {
+        log("ok");
         setState(() {
           _isLoading = false;
         });
-        Get.toNamed(
-          "/front-screen/login",
-        );
-        _showSuccessDialog();
+        if (result['isLinked'] == "exists") {
+          log("exists");
+          // Notify user about the existing subscription
+          _showSubscriptionConflictDialog();
+        } else {
+          log("sukses");
+          // Deliver the product if validation is successful
+          _showSuccessDialog();
+        }
       } else {
         log('Validation failed with message: ${result['message']}');
         setState(() {
@@ -161,6 +129,32 @@ class _InappViewState extends State<InappView> {
         _isLoading = false;
       });
     });
+  }
+
+  void _showSubscriptionConflictDialog() {
+    Get.defaultDialog(
+      title: "Subscription Conflict",
+      middleText:
+          "This subscription is already linked to another account. Please cancel it first and try again.",
+      textConfirm: "OK",
+      onConfirm: () {
+        Get.back(); // Close the dialog
+        Get.toNamed("/front-screen/login"); // Navigate back to the login screen
+      },
+    );
+  }
+
+  void _showPendingPurchaseDialog() {
+    Get.defaultDialog(
+      title: "Purchase Pending",
+      middleText:
+          "Your purchase is still pending. Please wait for it to complete or try again later.",
+      textConfirm: "OK",
+      onConfirm: () {
+        Get.back(); // Close the dialog
+        Get.toNamed("/front-screen/login"); // Navigate back to the login screen
+      },
+    );
   }
 
   void _showSuccessDialog() {
@@ -187,7 +181,7 @@ class _InappViewState extends State<InappView> {
     if (available) {
       await _loadProducts();
     } else {
-      print('In-app purchase not available');
+      log('In-app purchase not available');
     }
   }
 
@@ -199,12 +193,12 @@ class _InappViewState extends State<InappView> {
 
     log(response.productDetails.toString());
     if (response.error != null) {
-      print('Error fetching products: ${response.error}');
+      log('Error fetching products: ${response.error}');
     } else {
       if (response.productDetails.isEmpty) {
-        print('No products found. Please check your App Store Connect setup.');
+        log('No products found. Please check your App Store Connect setup.');
       } else {
-        print('Loaded products: ${response.productDetails}');
+        log('Loaded products: ${response.productDetails}');
         if (mounted) {
           setState(() {
             _products = response.productDetails;
@@ -270,12 +264,27 @@ class _InappViewState extends State<InappView> {
       log('Purchase initiated: $result');
     } catch (e) {
       _showDebugMessage('Error: $e');
+      setState(() {
+        _isLoading = false;
+      });
+      _showPendingPurchaseDialog();
       log('Error during subscription: $e');
     } finally {
       setState(() {
         _isLoading = false;
       });
     }
+  }
+
+  void _showErrorDialog(String message) {
+    Get.defaultDialog(
+      title: "Error",
+      middleText: message,
+      textConfirm: "OK",
+      onConfirm: () {
+        Get.back(); // Close the dialog
+      },
+    );
   }
 
   @override

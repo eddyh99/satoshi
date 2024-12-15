@@ -62,7 +62,7 @@ class _SettingViewState extends State<SettingView> {
     email = prefs.getString("email")!;
     idRef = prefs.getString("id_referral")!;
     lang = prefs.getString('selected_language') ?? 'en';
-    refcode= prefs.getString("refcode") ?? '';
+    refcode = prefs.getString("refcode") ?? '';
 
     setState(() {
       // _isLoading = false;
@@ -179,8 +179,7 @@ class _SettingViewState extends State<SettingView> {
                                 decoration: InputDecoration(
                                   filled: true,
                                   fillColor: Colors.white,
-                                  hintText:
-                                      refcode,
+                                  hintText: refcode,
                                   hintStyle: TextStyle(color: Colors.black),
                                   border: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(8),
@@ -237,28 +236,18 @@ class _SettingViewState extends State<SettingView> {
                           ),
                         ),
                         const SizedBox(height: 8),
-                        _buildTile(
-                          icon: Icons.diamond_outlined,
-                          text: 'Upgrade Subscription',
-                          trailing: SizedBox.shrink(),
-                          onTap: () async {
-                            if (Platform.isAndroid) {
+                        if (Platform.isAndroid)
+                          _buildTile(
+                            icon: Icons.diamond_outlined,
+                            text: 'Upgrade Subscription',
+                            trailing: SizedBox.shrink(),
+                            onTap: () async {
                               Get.toNamed("/front-screen/upgrade-plan",
                                   arguments: [
                                     {"email": email}
                                   ]);
-                            }
-                            if (Platform.isIOS) {
-                              String url =
-                                  "https://pnglobalinternational.com/widget/subscription/upgrade/${email}";
-                              if (await canLaunchUrlString(url)) {
-                                await launchUrlString(url);
-                              } else {
-                                throw 'Could not launch $url';
-                              }
-                            }
-                          },
-                        ),
+                            },
+                          ),
                         // const SizedBox(height: 8),
                         // _buildTile(
                         //   icon: Icons.language,
