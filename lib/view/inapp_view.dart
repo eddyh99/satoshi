@@ -20,16 +20,22 @@ class _InappViewState extends State<InappView> {
   var email = Get.arguments[0]["email"];
   final InAppPurchase _inAppPurchase = InAppPurchase.instance;
   bool _isLoading = false;
-  int? _selectedPlanIndex;
+  SubscriptionPlan? _selectedPlan;
   String? _debugMessage;
 
   List<ProductDetails> _products = [];
 
   final List<SubscriptionPlan> _plans = [
     SubscriptionPlan(
-        '3 Month', 700, '3 Month Regular', 'app.satoshisignal.3month'),
+        '1 Month Satoshi Signal Membership',
+        300,
+        'Enjoy premium signals for 1 month.',
+        'app.satoshisignal.monthly'),
     SubscriptionPlan(
-        '1 Month', 300, '1 Month Regular', 'app.satoshisignal.monthly'),
+        '3 Month Satoshi Signal Membership',
+        700,
+        'Get premium signals for 3 months at a discounted rate.',
+        'app.satoshisignal.3month'),
   ];
 
   @override
@@ -216,30 +222,32 @@ class _InappViewState extends State<InappView> {
   }
 
   void _confirmSubscription(SubscriptionPlan plan) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Confirm Subscription'),
-          content: Text(
-              'Do you want to subscribe to ${plan.name} for €${plan.price}?'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: Text('Cancel'),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                _handleSubscription(plan);
-              },
-              child: Text('Confirm'),
-            ),
-          ],
-        );
-      },
-    );
-  }
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: const Text('Confirm Subscription'),
+        content: Text(
+          'Do you want to subscribe to ${plan.name} for €${plan.price}?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              _handleSubscription(plan);
+            },
+            child: const Text('Confirm'),
+          ),
+        ],
+      );
+    },
+  );
+}
+
 
   void _handleSubscription(SubscriptionPlan plan) async {
     setState(() {
@@ -287,62 +295,74 @@ class _InappViewState extends State<InappView> {
     );
   }
 
+
   @override
-  Widget build(BuildContext context) {
-    return PopScope(
-        canPop: false,
-        child: SafeArea(
-            child: Scaffold(
-          backgroundColor: Colors.black,
-          body: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Please choose your subscription',
-                    style: const TextStyle(color: Colors.white, fontSize: 20)),
-                SizedBox(height: 20),
-                ..._plans.map((plan) {
-                  int index = _plans.indexOf(plan);
-                  return GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        _selectedPlanIndex = index;
-                      });
-                    },
-                    child: Container(
-                      margin: EdgeInsets.symmetric(vertical: 8),
-                      padding: EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: _selectedPlanIndex == index
-                            ? Color(0xb48b3d00)
-                            : Color(0xbfa57300),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(plan.name,
-                              style: TextStyle(color: Colors.white)),
-                          Text('€ ${plan.price}',
-                              style: TextStyle(color: Colors.white)),
-                        ],
-                      ),
+Widget build(BuildContext context) {
+  return PopScope(
+    canPop: false,
+    child: SafeArea(
+      child: Scaffold(
+        backgroundColor: Colors.black,
+        body: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Please choose your subscription',
+                style: const TextStyle(color: Colors.white, fontSize: 20),
+              ),
+              const SizedBox(height: 20),
+              
+              // Dropdown for subscription plans
+              DropdownButton<SubscriptionPlan>(
+                value: _selectedPlan,
+                dropdownColor: Colors.black,
+                hint: const Text(
+                  'Select a plan',
+                  style: TextStyle(color: Colors.white),
+                ),
+                items: _plans.map((plan) {
+                  return DropdownMenuItem<SubscriptionPlan>(
+                    value: plan,
+                    child: Text(
+                      '${plan.name} - € ${plan.price}',
+                      style: const TextStyle(color: Colors.white),
                     ),
                   );
-                }),
-                SizedBox(height: 20),
-                ElevatedButton(
-                  onPressed: _isLoading || _selectedPlanIndex == null
-                      ? null
-                      : () => _confirmSubscription(_plans[_selectedPlanIndex!]),
-                  child: Text('Subscribe'),
+                }).toList(),
+                onChanged: (SubscriptionPlan? selectedPlan) {
+                  setState(() {
+                    _selectedPlan = selectedPlan;
+                  });
+                },
+              ),
+              
+              const SizedBox(height: 20),
+              
+              // Subscribe Button
+              ElevatedButton(
+                onPressed: _isLoading || _selectedPlan == null
+                    ? null
+                    : () => _confirmSubscription(_selectedPlan!),
+                child: const Text('Subscribe'),
+              ),
+              
+              if (_debugMessage != null)
+                Padding(
+                  padding: const EdgeInsets.only(top: 20),
+                  child: Text(
+                    'Debug: $_debugMessage',
+                    style: const TextStyle(color: Colors.white),
+                  ),
                 ),
-              ],
-            ),
+            ],
           ),
-        )));
-  }
+        ),
+      ),
+    ),
+  );
+}
 }
 
 class SubscriptionPlan {
