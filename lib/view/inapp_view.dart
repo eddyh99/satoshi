@@ -27,15 +27,15 @@ class _InappViewState extends State<InappView> {
 
   final List<SubscriptionPlan> _plans = [
     SubscriptionPlan(
-        '1 Month Satoshi Signal Membership',
-        300,
-        'Enjoy premium signals for 1 month.',
-        'app.satoshisignal.monthly'),
+      name: '1 Month Satoshi Signal Membership',
+      price: 300,
+      id: 'app.satoshisignal.monthly',
+    ),
     SubscriptionPlan(
-        '3 Month Satoshi Signal Membership',
-        700,
-        'Get premium signals for 3 months at a discounted rate.',
-        'app.satoshisignal.3month'),
+      name: '3 Month Satoshi Signal Membership',
+      price: 700,
+      id: 'app.satoshisignal.3month',
+    ),
   ];
 
   @override
@@ -222,32 +222,31 @@ class _InappViewState extends State<InappView> {
   }
 
   void _confirmSubscription(SubscriptionPlan plan) {
-  showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      return AlertDialog(
-        title: const Text('Confirm Subscription'),
-        content: Text(
-          'Do you want to subscribe to ${plan.name} for €${plan.price}?',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Confirm Subscription'),
+          content: Text(
+            'Do you want to subscribe to ${plan.name} for €${plan.price}?',
           ),
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              _handleSubscription(plan);
-            },
-            child: const Text('Confirm'),
-          ),
-        ],
-      );
-    },
-  );
-}
-
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                _handleSubscription(plan);
+              },
+              child: const Text('Confirm'),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   void _handleSubscription(SubscriptionPlan plan) async {
     setState(() {
@@ -295,81 +294,139 @@ class _InappViewState extends State<InappView> {
     );
   }
 
+  @override
+// Define the currently selected subscription in the state
+  int _selectedPlanIndex = -1;
 
   @override
-Widget build(BuildContext context) {
-  return PopScope(
-    canPop: false,
-    child: SafeArea(
-      child: Scaffold(
-        backgroundColor: Colors.black,
-        body: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Please choose your subscription',
-                style: const TextStyle(color: Colors.white, fontSize: 20),
-              ),
-              const SizedBox(height: 20),
-              
-              // Dropdown for subscription plans
-              DropdownButton<SubscriptionPlan>(
-                value: _selectedPlan,
-                dropdownColor: Colors.black,
-                hint: const Text(
-                  'Select a plan',
-                  style: TextStyle(color: Colors.white),
+  Widget build(BuildContext context) {
+    return PopScope(
+      canPop: false,
+      child: SafeArea(
+        child: Scaffold(
+          backgroundColor: Colors.black,
+          body: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Please choose your subscription',
+                  style: const TextStyle(color: Colors.white, fontSize: 20),
                 ),
-                items: _plans.map((plan) {
-                  return DropdownMenuItem<SubscriptionPlan>(
-                    value: plan,
-                    child: Text(
-                      '${plan.name} - € ${plan.price}',
-                      style: const TextStyle(color: Colors.white),
+                const SizedBox(height: 20),
+
+                // Monthly Satoshi Signal Button
+                GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _selectedPlanIndex = 0; // Select Monthly Plan
+                    });
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.all(12.0),
+                    decoration: BoxDecoration(
+                      color: _selectedPlanIndex == 0
+                          ? Color(0xFFBFA573)
+                          : Colors.grey[800],
+                      borderRadius: BorderRadius.circular(8.0),
                     ),
-                  );
-                }).toList(),
-                onChanged: (SubscriptionPlan? selectedPlan) {
-                  setState(() {
-                    _selectedPlan = selectedPlan;
-                  });
-                },
-              ),
-              
-              const SizedBox(height: 20),
-              
-              // Subscribe Button
-              ElevatedButton(
-                onPressed: _isLoading || _selectedPlan == null
-                    ? null
-                    : () => _confirmSubscription(_selectedPlan!),
-                child: const Text('Subscribe'),
-              ),
-              
-              if (_debugMessage != null)
-                Padding(
-                  padding: const EdgeInsets.only(top: 20),
-                  child: Text(
-                    'Debug: $_debugMessage',
-                    style: const TextStyle(color: Colors.white),
+                    child: const Text(
+                      'Monthly Satoshi Signal',
+                      style: TextStyle(color: Colors.white, fontSize: 18),
+                    ),
                   ),
                 ),
-            ],
+
+                if (_selectedPlanIndex == 0) ...[
+                  const SizedBox(height: 10),
+                  const Text(
+                    'Description: Enjoy premium signals for 1 month.\n'
+                    'Duration: 1 Month\n'
+                    'Price: 300 EUR/month',
+                    style: TextStyle(color: Colors.white, fontSize: 16),
+                  ),
+                ],
+
+                const SizedBox(height: 20),
+
+                // 3 Month Satoshi Signal Button
+                GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _selectedPlanIndex = 1; // Select 3 Month Plan
+                    });
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.all(12.0),
+                    decoration: BoxDecoration(
+                      color: _selectedPlanIndex == 1
+                          ? Color(0xFFBFA573)
+                          : Colors.grey[800],
+                      borderRadius: BorderRadius.circular(8.0),
+                    ),
+                    child: const Text(
+                      '3 Month Satoshi Signal',
+                      style: TextStyle(color: Colors.white, fontSize: 18),
+                    ),
+                  ),
+                ),
+
+                if (_selectedPlanIndex == 1) ...[
+                  const SizedBox(height: 10),
+                  const Text(
+                    'Description: Enjoy premium signals for 3 months.\n'
+                    'Duration: 3 Months\n'
+                    'Price: 750 EUR/3 months',
+                    style: TextStyle(color: Colors.white, fontSize: 16),
+                  ),
+                ],
+
+                const SizedBox(height: 20),
+
+                // Subscribe Button
+                ElevatedButton(
+                  onPressed: _selectedPlanIndex == -1
+                      ? null
+                      : () => _confirmSubscription(
+                            _selectedPlanIndex == 0
+                                ? SubscriptionPlan(
+                                    name: 'Monthly Satoshi Signal',
+                                    price: 300,
+                                    id: 'monthly_plan')
+                                : SubscriptionPlan(
+                                    name: '3 Month Satoshi Signal',
+                                    price: 750,
+                                    id: '3_month_plan'),
+                          ),
+                  child: const Text('Subscribe'),
+                ),
+
+                if (_debugMessage != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 20),
+                    child: Text(
+                      'Debug: $_debugMessage',
+                      style: const TextStyle(color: Colors.white),
+                    ),
+                  ),
+              ],
+            ),
           ),
         ),
       ),
-    ),
-  );
-}
+    );
+  }
 }
 
 class SubscriptionPlan {
   final String name;
   final int price;
-  final String description;
   final String id;
 
-  SubscriptionPlan(this.name, this.price, this.description, this.id);
+  SubscriptionPlan({
+    required this.name,
+    required this.price,
+    required this.id,
+  });
 }

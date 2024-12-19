@@ -106,7 +106,6 @@ class _ConfirmationViewState extends State<ConfirmationView> {
                                 }
                               } else {
                                 var psnerr = result['message'];
-                                Navigator.pop(context);
                                 if (context.mounted) {
                                   Navigator.pop(context);
                                   ScaffoldMessenger.of(context)
