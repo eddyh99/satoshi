@@ -274,7 +274,7 @@ class _InappViewState extends State<InappView> {
       setState(() {
         _isLoading = false;
       });
-      _showPendingPurchaseDialog();
+      _showErrorDialog(e.toString());
       log('Error during subscription: $e');
     } finally {
       setState(() {
@@ -377,7 +377,7 @@ class _InappViewState extends State<InappView> {
                   const Text(
                     'Description: Enjoy premium signals for 3 months.\n'
                     'Duration: 3 Months\n'
-                    'Price: 750 EUR/3 months',
+                    'Price: 829 EUR/3 months',
                     style: TextStyle(color: Colors.white, fontSize: 16),
                   ),
                 ],
