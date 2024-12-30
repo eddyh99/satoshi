@@ -16,6 +16,7 @@ class Satoshinav extends StatefulWidget {
 
 class _SatoshinavState extends State<Satoshinav> {
   bool hasNewMessage = false;
+  bool hasNewSignal = false;
 
   @override
   void initState() {
@@ -24,6 +25,7 @@ class _SatoshinavState extends State<Satoshinav> {
     // Listen to the event bus for WebView reload and message updates
     eventBus.on<ReloadWebViewEvent>().listen((event) {
       _checkNewMessageStatus(); // Refresh message badge state
+      _checkNewSignalStatus();
     });
   }
 
@@ -36,26 +38,36 @@ class _SatoshinavState extends State<Satoshinav> {
     });
   }
 
+  // Check SharedPreferences to see if there's a new message
+  Future<void> _checkNewSignalStatus() async {
+    final prefs = await SharedPreferences.getInstance();
+    bool newSignal = prefs.getBool('hasNewSignal') ?? false;
+    setState(() {
+      hasNewSignal = newSignal;
+    });
+  }
+
   // Handle navigation tap
   void _onTabSelected(int index) {
-    if (index == 2) {
-      // If "Message" tab is tapped, clear the badge
-      setState(() {
-        hasNewMessage = false;
-      });
-      _clearNewMessageFlag();
-    }
-
     // Navigate to the appropriate screen
     switch (index) {
       case 0:
         Get.toNamed("/front-screen/home");
+        setState(() {
+          hasNewSignal = false;
+        });
+        _clearNewSignalFlag();
         break;
       case 1:
         Get.toNamed("/front-screen/history");
         break;
       case 2:
         Get.toNamed("/front-screen/message");
+
+        setState(() {
+          hasNewMessage = false;
+        });
+        _clearNewMessageFlag();
         break;
       case 3:
         Get.toNamed("/front-screen/setting");
@@ -69,6 +81,12 @@ class _SatoshinavState extends State<Satoshinav> {
     await prefs.setBool('hasNewMessage', false);
   }
 
+  // Clear new message flag in SharedPreferences
+  Future<void> _clearNewSignalFlag() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('hasNewSignal', false);
+  }
+
   @override
   Widget build(BuildContext context) {
     return ConvexAppBar(
@@ -80,14 +98,38 @@ class _SatoshinavState extends State<Satoshinav> {
         items: [
           TabItem(
               title: 'Signal',
-              icon: widget.number == 0
-                  ? const ImageIcon(AssetImage('assets/images/signal.png'),
-                      color: Color(0xFFB48B3D) // Active color
-                      )
-                  : const ImageIcon(
-                      AssetImage('assets/images/signal.png'),
-                      color: Colors.white, // Inactive color
-                    )),
+              icon: Stack(
+                clipBehavior: Clip.none,
+                fit: StackFit.expand,
+                children: [
+                  widget.number == 0
+                      ? const ImageIcon(
+                          AssetImage('assets/images/signal.png'),
+                          color: Color(0xFFB48B3D),
+                        )
+                      : const ImageIcon(
+                          AssetImage('assets/images/signal.png'),
+                          color: Colors.white,
+                        ),
+                  (hasNewSignal)
+                      ? Positioned(
+                          right: 0,
+                          top: 0,
+                          child: Container(
+                            padding: const EdgeInsets.all(2),
+                            decoration: const BoxDecoration(
+                              color: Colors.red,
+                              shape: BoxShape.circle,
+                            ),
+                            constraints: const BoxConstraints(
+                              minWidth: 8,
+                              minHeight: 8,
+                            ),
+                          ),
+                        )
+                      : const SizedBox.shrink()
+                ],
+              )),
           TabItem(
               title: 'History',
               icon: widget.number == 1

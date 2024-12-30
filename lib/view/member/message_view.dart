@@ -83,12 +83,6 @@ class _MessageViewState extends State<MessageView> with WidgetsBindingObserver {
                   document.head.appendChild(style);
                 })();
               ''');
-              _loadStartTime = DateTime.now();
-              if (mounted) {
-                setState(() {
-                  _isError = false; // Reset error state on new page load
-                });
-              }
             },
             onPageFinished: (url) {
               //Inject JavaScript to hide the toolbar inside the iframe with ID 'gt-nvframe'
@@ -106,38 +100,6 @@ class _MessageViewState extends State<MessageView> with WidgetsBindingObserver {
                   document.body.style.top = '0px'; // Adjust body top to avoid gap
                 })();
               ''');
-
-              if (mounted) {
-                setState(() {
-                  _isWebViewLoaded = true;
-                  if (_isInitialLoad) {
-                    _isInitialLoad = false;
-                    final duration = DateTime.now().difference(_loadStartTime);
-                    if (duration < _initialLoadTimeout) {
-                      _isError = false;
-                      _isDataReady = false;
-                    } else if (_isError) {
-                      _showErrorBottomSheet();
-                    }
-                  }
-                });
-              }
-            },
-            onWebResourceError: (error) {
-              if (mounted) {
-                setState(() {
-                  if (_isWebViewLoaded) {
-                    final duration = DateTime.now().difference(_loadStartTime);
-                    if (duration < _initialLoadTimeout) {
-                      _isError =
-                          false; // Ensure initial load is considered successful if it completed
-                    } else {
-                      _isError = true;
-                      _showErrorBottomSheet();
-                    }
-                  }
-                });
-              }
             },
           ),
         )
@@ -243,7 +205,7 @@ class _MessageViewState extends State<MessageView> with WidgetsBindingObserver {
 
   void _updateTranslationUrl() {
     urltranslated =
-        "https://translate.google.com/translate?sl=auto&tl=$selectedLanguage&hl=$selectedLanguage&u=https://pnglobalinternational.com/widget/message";
+        "https://translate.google.com/translate?sl=auto&tl=$selectedLanguage&hl=$selectedLanguage&u=$urlbase/widget/message";
 
     setState(() {
       // Reinitialize WebViewController with the new URL
@@ -340,30 +302,14 @@ class _MessageViewState extends State<MessageView> with WidgetsBindingObserver {
         ),
         backgroundColor: Colors.black,
         body: SafeArea(
-          child: _isError && !_isWebViewLoaded
+          child: _webViewController == null
               ? const Center(
-                  child: TextWidget(
-                    text:
-                        'Failed to load the page. Please check your internet connection.',
-                    fontsize: 16,
+                  child: Text(
+                    'Loading...',
+                    style: TextStyle(color: Colors.white, fontSize: 16),
                   ),
                 )
-              : Stack(
-                  children: [
-                    _webViewController == null
-                        ? const Center(
-                            child:
-                                CircularProgressIndicator()) // Show a loading indicator while _controller is null
-                        : WebViewWidget(controller: _webViewController!),
-                    (_isDataReady)
-                        ? const Center(
-                            child: CircularProgressIndicator(
-                              color: Colors.white,
-                            ),
-                          )
-                        : Container(),
-                  ],
-                ),
+              : WebViewWidget(controller: _webViewController!),
         ),
         bottomNavigationBar: const Satoshinav(
           number: 2,

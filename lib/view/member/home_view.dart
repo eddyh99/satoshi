@@ -7,7 +7,6 @@ import 'package:satoshi/utils/firebase_messaging_service.dart';
 import 'package:satoshi/utils/globalvar.dart';
 import 'package:satoshi/view/widget/bottomnav_widget.dart';
 import 'package:satoshi/view/widget/button_widget.dart';
-import 'package:satoshi/view/widget/text_widget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
