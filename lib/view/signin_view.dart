@@ -336,7 +336,7 @@ class _SigninViewState extends State<SigninView> {
                           log(url.toString());
                           await satoshiAPI(url, jsonEncode(mdata)).then((ress) {
                             var result = jsonDecode(ress);
-
+                            log("100-" + result.toString());
                             if ((result['code'] == "200") &&
                                 (result["message"]["role"] == "member")) {
                               prefs.setString(
@@ -354,21 +354,10 @@ class _SigninViewState extends State<SigninView> {
                                   result["message"]["end_date"] ?? "");
                               prefs.setString('period',
                                   result["message"]["total_period"] ?? '0');
-                              prefs.setString(
-                                  'amount', result["message"]["amount"] ?? '0');
-                              prefs.setString('devicetoken',
-                                  result["message"]["devicetoken"]);
-                              prefs.setString('selected_language', "en");
-                              if (result["message"]["id_referral"] == null) {
-                                prefs.setString("id_referral", "null");
-                              } else {
-                                prefs.setString("id_referral",
-                                    result["message"]["id_referral"]);
-                              }
+                              prefs.setString("id_referral",
+                                  result["message"]["id_referral"] ?? "");
                               prefs.setString(
                                   "role", result["message"]["role"]);
-                              prefs.setString(
-                                  "timezone", result["message"]["timezone"]);
                               prefs.setString("membership",
                                   result["message"]["membership"]);
                               if (result["message"]["membership"] ==
@@ -403,7 +392,7 @@ class _SigninViewState extends State<SigninView> {
                               showAlert(psnerr, context);
                             }
                           }).catchError((err) {
-                            log(err.toString());
+                            log("100-" + err.toString());
                             Navigator.pop(context);
                             showAlert(
                               "Something Wrong, Please Contact Administrator",

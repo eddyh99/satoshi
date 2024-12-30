@@ -27,7 +27,7 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
   bool _isError = false;
   bool _isWebViewLoaded = false;
   bool _isInitialLoad = true;
-  bool _isDataReady = true;
+  final bool _isDataReady = true;
   late final DateTime _loadStartTime;
   static const Duration _initialLoadTimeout = Duration(seconds: 20);
   dynamic email;
@@ -66,74 +66,7 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
         ..setBackgroundColor(const Color(0x00000000))
         ..clearCache()
         ..enableZoom(false)
-        ..setNavigationDelegate(
-          NavigationDelegate(
-            onPageStarted: (String url) {
-              _controller!.runJavaScript('''
-                (function() {
-                  var style = document.createElement('style');
-                  style.innerHTML = '.goog-te-banner-frame, #gt-nvframe { display: none !important; }';
-                  document.head.appendChild(style);
-                })();
-              ''');
-              _loadStartTime = DateTime.now();
-              if (mounted) {
-                setState(() {
-                  _isError = false; // Reset error state on new page load
-                });
-              }
-            },
-            onPageFinished: (url) {
-              //Inject JavaScript to hide the toolbar inside the iframe with ID 'gt-nvframe'
-              _controller!.runJavaScript('''
-                (function() {
-                  var translateBar = document.querySelector('.goog-te-banner-frame');
-                  if (translateBar) {
-                    translateBar.style.display = 'none';
-                  }
-
-                  var iframe = document.getElementById('gt-nvframe');
-                  if (iframe) {
-                    iframe.style.display = 'none'; // Hide iframe if found
-                  }
-                  document.body.style.top = '0px'; // Adjust body top to avoid gap
-                })();
-              ''');
-
-              if (mounted) {
-                setState(() {
-                  _isWebViewLoaded = true;
-                  if (_isInitialLoad) {
-                    _isInitialLoad = false;
-                    final duration = DateTime.now().difference(_loadStartTime);
-                    if (duration < _initialLoadTimeout) {
-                      _isError = false;
-                      _isDataReady = false;
-                    } else if (_isError) {
-                      _showErrorBottomSheet();
-                    }
-                  }
-                });
-              }
-            },
-            onWebResourceError: (error) {
-              if (mounted) {
-                setState(() {
-                  if (_isWebViewLoaded) {
-                    final duration = DateTime.now().difference(_loadStartTime);
-                    if (duration < _initialLoadTimeout) {
-                      _isError =
-                          false; // Ensure initial load is considered successful if it completed
-                    } else {
-                      _isError = true;
-                      _showErrorBottomSheet();
-                    }
-                  }
-                });
-              }
-            },
-          ),
-        )
+        ..setNavigationDelegate
         ..loadRequest(Uri.parse(urltranslated));
     });
   }
@@ -232,30 +165,14 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
     return Scaffold(
         backgroundColor: Colors.black,
         body: SafeArea(
-          child: _isError && !_isWebViewLoaded
+          child: _controller == null
               ? const Center(
-                  child: TextWidget(
-                    text:
-                        'Failed to load the page. Please check your internet connection.',
-                    fontsize: 16,
+                  child: Text(
+                    'Loading...',
+                    style: TextStyle(color: Colors.white, fontSize: 16),
                   ),
                 )
-              : Stack(
-                  children: [
-                    _controller == null
-                        ? const Center(
-                            child:
-                                CircularProgressIndicator()) // Show a loading indicator while _controller is null
-                        : WebViewWidget(controller: _controller!),
-                    (_isDataReady)
-                        ? const Center(
-                            child: CircularProgressIndicator(
-                              color: Colors.white,
-                            ),
-                          )
-                        : Container(),
-                  ],
-                ),
+              : WebViewWidget(controller: _controller!),
         ),
         bottomNavigationBar: const Satoshinav(
           number: 0,

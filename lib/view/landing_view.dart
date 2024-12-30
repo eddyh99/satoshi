@@ -40,15 +40,9 @@ class _LandingViewState extends State<LandingView> {
           prefs.setString("id", result["message"]["id"]);
           prefs.setString("end_date", result["message"]["end_date"]);
           prefs.setString('period', result["message"]["total_period"]);
-          prefs.setString('amount', result["message"]["amount"]);
-          prefs.setString('devicetoken', result["message"]["devicetoken"]);
-          if (result["message"]["id_referral"] == null) {
-            prefs.setString("id_referral", "null");
-          } else {
-            prefs.setString("id_referral", result["message"]["id_referral"]);
-          }
+          prefs.setString(
+              "id_referral", result["message"]["id_referral"] ?? "");
           prefs.setString("role", result["message"]["role"]);
-          prefs.setString("timezone", result["message"]["timezone"]);
           prefs.setString("membership", result["message"]["membership"]);
           if (result["message"]["membership"] == "expired") {
             Get.toNamed("/front-screen/subscribe");
