@@ -45,7 +45,7 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
     String? token = await FirebaseMessaging.instance.getToken();
     log("FCM Token: $token");
     if (Platform.isAndroid || Platform.isIOS) {
-      FirebaseMessaging.instance.subscribeToTopic('testing').then((_) {
+      FirebaseMessaging.instance.subscribeToTopic('signal').then((_) {
         log("Successfully subscribed to topic 'signal'");
       }).catchError((error, stackTrace) {
         log("Error subscribing to topic 'signal': $error");
