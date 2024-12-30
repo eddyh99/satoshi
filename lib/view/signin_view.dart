@@ -66,7 +66,7 @@ class _SigninViewState extends State<SigninView> {
 
   Future<void> _launchURL() async {
     String url = "";
-    url = 'https://pnglobalinternational.com/member/auth/register';
+    url = '$urlbase/member/auth/register';
     if (await canLaunchUrlString(url)) {
       await launchUrlString(url);
     } else {

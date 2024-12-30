@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:satoshi/utils/globalvar.dart';
 import 'package:satoshi/view/widget/bottomnav_widget.dart';
 import 'package:satoshi/view/widget/button_widget.dart';
 import 'package:satoshi/view/widget/text_widget.dart';
@@ -36,7 +37,7 @@ class _HistoryViewState extends State<HistoryView> with WidgetsBindingObserver {
     lang = prefs.getString('selected_language') ?? 'en';
 
     // Update the URL after getting preferences
-    urltranslated = "https://pnglobalinternational.com/widget/signal/history";
+    urltranslated = "$urlbase/widget/signal/history";
 
     // Initialize the WebViewController after lang is updated
     setState(() {

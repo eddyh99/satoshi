@@ -3,6 +3,7 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:satoshi/utils/firebase_messaging_service.dart';
+import 'package:satoshi/utils/globalvar.dart';
 import 'package:satoshi/view/widget/bottomnav_widget.dart';
 import 'package:satoshi/view/widget/button_widget.dart';
 import 'package:satoshi/view/widget/text_widget.dart';
@@ -65,7 +66,7 @@ class _MessageViewState extends State<MessageView> with WidgetsBindingObserver {
       selectedLanguage = savedLang; // Sync with dropdown
       // Update the URL after getting preferences
       urltranslated =
-          "https://translate.google.com/translate?sl=auto&tl=$lang&hl=$lang&u=https://pnglobalinternational.com/widget/message";
+          "https://translate.google.com/translate?sl=auto&tl=$lang&hl=$lang&u=$urlbase/widget/message";
 
       _webViewController = WebViewController()
         ..setJavaScriptMode(JavaScriptMode.unrestricted)

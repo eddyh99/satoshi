@@ -47,7 +47,7 @@ class _SettingViewState extends State<SettingView> {
       url =
           'https://www.pnglobalinternational.com/homepage/service?service=c2F0b3NoaV9zaWduYWw=';
     } else if (tipe == "delete") {
-      url = 'https://www.pnglobalinternational.com/homepage/account_deletion';
+      url = '$urlbase/homepage/account_deletion';
     }
     if (await canLaunchUrlString(url)) {
       await launchUrlString(url);

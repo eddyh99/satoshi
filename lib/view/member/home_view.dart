@@ -4,6 +4,7 @@ import 'dart:io' show Platform;
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:satoshi/utils/firebase_messaging_service.dart';
+import 'package:satoshi/utils/globalvar.dart';
 import 'package:satoshi/view/widget/bottomnav_widget.dart';
 import 'package:satoshi/view/widget/button_widget.dart';
 import 'package:satoshi/view/widget/text_widget.dart';
@@ -56,7 +57,7 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
     }
 
     // Update the URL after getting preferences
-    urltranslated = "https://pnglobalinternational.com/widget/signal";
+    urltranslated = "$urlbase/widget/signal";
 
     // Initialize the WebViewController after lang is updated
     setState(() {
