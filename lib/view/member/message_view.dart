@@ -2,11 +2,11 @@ import 'dart:async';
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:satoshi/utils/event_bus.dart';
 import 'package:satoshi/utils/firebase_messaging_service.dart';
 import 'package:satoshi/utils/globalvar.dart';
 import 'package:satoshi/view/widget/bottomnav_widget.dart';
 import 'package:satoshi/view/widget/button_widget.dart';
-import 'package:satoshi/view/widget/text_widget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -30,14 +30,9 @@ class _MessageViewState extends State<MessageView> with WidgetsBindingObserver {
   WebViewController? _webViewController;
   late String lang = "en";
   String urltranslated = "";
-  bool _isError = false;
-  bool _isWebViewLoaded = false;
-  bool _isInitialLoad = true;
-  bool _isDataReady = true;
-  late final DateTime _loadStartTime;
-  static const Duration _initialLoadTimeout = Duration(seconds: 20);
   late final StreamSubscription _eventBusSubscription;
   String selectedLanguage = 'en'; // Default language is English
+  String lastMessageId = "";
 
 // List of supported languages, their codes, and corresponding country codes
   final List<Map<String, String>> languages = [
@@ -58,16 +53,28 @@ class _MessageViewState extends State<MessageView> with WidgetsBindingObserver {
 
   Future<dynamic> getPrefer() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    final savedLang =
-        prefs.getString('selected_language') ?? 'en'; // Default to 'en'
+    final savedLang = prefs.getString('selected_language') ?? 'en';
+    final msgid = prefs.getString('lastMessageId') ?? '';
+    prefs.setString('lastMessageId', "");
+    prefs.setBool('hasNewMessage', false);
+
     log('Loaded language from preferences: $savedLang');
     setState(() {
-      lang = savedLang; // Update language from preferences
-      selectedLanguage = savedLang; // Sync with dropdown
-      // Update the URL after getting preferences
-      urltranslated =
-          "https://translate.google.com/translate?sl=auto&tl=$lang&hl=$lang&u=$urlbase/widget/message";
+      lang = savedLang;
+      selectedLanguage = savedLang;
+      lastMessageId = msgid;
+      log(lastMessageId);
 
+      // Update the URL after getting preferences
+
+      if (lastMessageId.isEmpty) {
+        urltranslated =
+            "https://translate.google.com/translate?sl=auto&tl=$lang&hl=$lang&u=$urlbase/widget/message";
+      } else {
+        urltranslated =
+            "https://translate.google.com/translate?sl=auto&tl=$lang&hl=$lang&u=$urlbase/widget/message/detailmessage/$lastMessageId";
+      }
+      log(urltranslated);
       _webViewController = WebViewController()
         ..setJavaScriptMode(JavaScriptMode.unrestricted)
         ..setBackgroundColor(const Color(0x00000000))
@@ -175,10 +182,8 @@ class _MessageViewState extends State<MessageView> with WidgetsBindingObserver {
                       if (mounted) {
                         _webViewController!.reload(); // Retry loading the page
                         setState(() {
-                          _isError = false;
-                          _isWebViewLoaded = false; // Reset the loaded state
-                          _isInitialLoad =
-                              true; // Allow initial load check again
+// Reset the loaded state
+// Allow initial load check again
                         });
                       }
                     },
@@ -204,9 +209,13 @@ class _MessageViewState extends State<MessageView> with WidgetsBindingObserver {
   }
 
   void _updateTranslationUrl() {
-    urltranslated =
-        "https://translate.google.com/translate?sl=auto&tl=$selectedLanguage&hl=$selectedLanguage&u=$urlbase/widget/message";
-
+    if (lastMessageId.isEmpty) {
+      urltranslated =
+          "https://translate.google.com/translate?sl=auto&tl=$lang&hl=$lang&u=$urlbase/widget/message";
+    } else {
+      urltranslated =
+          "https://translate.google.com/translate?sl=auto&tl=$lang&hl=$lang&u=$urlbase/widget/message/detailmessage/$lastMessageId";
+    }
     setState(() {
       // Reinitialize WebViewController with the new URL
       _webViewController = WebViewController()
@@ -303,12 +312,7 @@ class _MessageViewState extends State<MessageView> with WidgetsBindingObserver {
         backgroundColor: Colors.black,
         body: SafeArea(
           child: _webViewController == null
-              ? const Center(
-                  child: Text(
-                    'Loading...',
-                    style: TextStyle(color: Colors.white, fontSize: 16),
-                  ),
-                )
+              ? const Center(child: CircularProgressIndicator())
               : WebViewWidget(controller: _webViewController!),
         ),
         bottomNavigationBar: const Satoshinav(

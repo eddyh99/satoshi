@@ -46,6 +46,7 @@ class _HistoryViewState extends State<HistoryView> with WidgetsBindingObserver {
         ..setBackgroundColor(const Color(0x00000000))
         ..clearCache()
         ..enableZoom(false)
+        ..setNavigationDelegate
         ..setNavigationDelegate(
           NavigationDelegate(
             onPageStarted: (String url) {
@@ -82,17 +83,8 @@ class _HistoryViewState extends State<HistoryView> with WidgetsBindingObserver {
 
               if (mounted) {
                 setState(() {
-                  _isWebViewLoaded = true;
-                  if (_isInitialLoad) {
-                    _isInitialLoad = false;
-                    final duration = DateTime.now().difference(_loadStartTime);
-                    if (duration < _initialLoadTimeout) {
-                      _isError = false;
-                      _isDataReady = false;
-                    } else if (_isError) {
-                      _showErrorBottomSheet();
-                    }
-                  }
+                  _isWebViewLoaded = true; // Set the flag to hide the loader
+                  _isError = false; // Reset the error state
                 });
               }
             },
@@ -104,10 +96,7 @@ class _HistoryViewState extends State<HistoryView> with WidgetsBindingObserver {
                     if (duration < _initialLoadTimeout) {
                       _isError =
                           false; // Ensure initial load is considered successful if it completed
-                    } else {
-                      _isError = true;
-                      _showErrorBottomSheet();
-                    }
+                    } else {}
                   }
                 });
               }
@@ -201,35 +190,38 @@ class _HistoryViewState extends State<HistoryView> with WidgetsBindingObserver {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        backgroundColor: Colors.black,
-        body: SafeArea(
-          child: _isError && !_isWebViewLoaded
-              ? const Center(
-                  child: TextWidget(
-                    text:
-                        'Failed to load the page. Please check your internet connection.',
-                    fontsize: 16,
-                  ),
-                )
-              : Stack(
-                  children: [
-                    _webViewController == null
-                        ? const Center(
-                            child:
-                                CircularProgressIndicator()) // Show a loading indicator while _controller is null
-                        : WebViewWidget(controller: _webViewController!),
-                    (_isDataReady)
-                        ? const Center(
-                            child: CircularProgressIndicator(
-                              color: Colors.white,
-                            ),
-                          )
-                        : Container(),
-                  ],
+      backgroundColor: Colors.black,
+      body: SafeArea(
+        child: _isError
+            ? const Center(
+                child: TextWidget(
+                  text:
+                      'Failed to load the page. Please check your internet connection.',
+                  fontsize: 16,
                 ),
-        ),
-        bottomNavigationBar: const Satoshinav(
-          number: 1,
-        ));
+              )
+            : Stack(
+                children: [
+                  _webViewController == null
+                      ? const Center(
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                          ),
+                        ) // Show a loading indicator while the controller is null
+                      : WebViewWidget(controller: _webViewController!),
+                  !_isWebViewLoaded
+                      ? const Center(
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                          ),
+                        )
+                      : Container(), // Hide loading indicator when the WebView is loaded
+                ],
+              ),
+      ),
+      bottomNavigationBar: const Satoshinav(
+        number: 1,
+      ),
+    );
   }
 }

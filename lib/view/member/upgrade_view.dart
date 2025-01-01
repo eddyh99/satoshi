@@ -34,7 +34,7 @@ class _UpgradeViewState extends State<UpgradeView> with WidgetsBindingObserver {
 
     // Update the URL after getting preferences
     urltranslated =
-        "https://pnglobalinternational.com/widget/subscription/upgrade/$_email";
+        "https://satoshisignal.app/widget/subscription/upgrade/$_email";
 
     // Initialize the WebViewController after lang is updated
     setState(() {

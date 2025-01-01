@@ -5,9 +5,8 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get/get.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:satoshi/utils/event_bus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
-EventBus eventBus = EventBus();
 
 class FirebaseMessagingService {
   // Singleton instance
@@ -24,16 +23,21 @@ class FirebaseMessagingService {
   final FlutterLocalNotificationsPlugin _flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
 
-  void initialize() {
-    // Initialize local notification for foreground messages
-    initializeLocalNotifications();
-
-    // Request permission for iOS devices
+  void initialize() async {
+    // Request permissions for iOS devices and initialize local notifications
     _requestPermission();
 
-    log('Firebase Messaging Service Initialized');
+    // Initialize local notifications
+    initializeLocalNotifications();
 
-// Foreground message handler
+    // Create the default notification channel once
+    final prefs = await SharedPreferences.getInstance();
+    final isSoundEnabled = prefs.getBool('sound') ?? true;
+    final isVibrationEnabled = prefs.getBool('vibration') ?? true;
+    await _createNotificationChannel(isSoundEnabled, isVibrationEnabled);
+
+    log('Firebase Messaging Service Initialized');
+    // Set up foreground message listener
     FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
       if (message.notification != null) {
         final Uri uri = Uri.parse(message.data['link'] ?? '');
@@ -43,17 +47,17 @@ class FirebaseMessagingService {
           if (uri.host == 'message') {
             await prefs.setBool('hasNewMessage', true);
             _showNotification(
-              message.notification!.title ?? 'No Title',
-              message.notification!.body ?? 'No Body',
+              message.notification!.title ?? 'Message Notification',
+              message.notification!.body ?? 'Check out Message!',
             );
-            eventBus.fire(ReloadWebViewEvent());
+            eventBus.fire(ReloadBadgeEvent());
           } else if (uri.host == 'signal') {
             await prefs.setBool('hasNewSignal', true);
             _showNotification(
               message.notification!.title ?? 'Signal Notification',
               message.notification!.body ?? 'Check out the signal!',
             );
-            eventBus.fire(ReloadWebViewEvent());
+            eventBus.fire(ReloadBadgeEvent());
           }
         }
       }
@@ -67,48 +71,18 @@ class FirebaseMessagingService {
           if (uri.host == 'signal') {
             await prefs.setBool('hasNewSignal', true);
             Get.toNamed("/front-screen/home");
-          } else {
+          } else if (uri.host == 'message') {
+            final String? messageId =
+                uri.pathSegments.isNotEmpty ? uri.pathSegments[0] : null;
+            if (messageId != null) {
+              await prefs.setString('lastMessageId', messageId);
+            }
             await prefs.setBool('hasNewMessage', true);
             Get.toNamed("/front-screen/message");
           }
         }
       }
     });
-
-    // Handle background messages
-    FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
-  }
-
-// Background message handler
-  static Future<void> _firebaseMessagingBackgroundHandler(
-      RemoteMessage message) async {
-    log('Handling background message: ${message.messageId}');
-    log('Message data: ${message.data}');
-    final FirebaseMessagingService firebaseMessagingService =
-        FirebaseMessagingService();
-
-    if (message.notification != null) {
-      final Uri uri = Uri.parse(message.data['link'] ?? '');
-      if (uri.scheme == 'satoshi') {
-        final prefs = await SharedPreferences.getInstance();
-
-        if (uri.host == 'message') {
-          await prefs.setBool('hasNewMessage', true);
-          await firebaseMessagingService._showNotification(
-            message.notification!.title ?? 'No Title',
-            message.notification!.body ?? 'No Body',
-          );
-          eventBus.fire(ReloadWebViewEvent());
-        } else if (uri.host == 'signal') {
-          await prefs.setBool('hasNewSignal', true);
-          await firebaseMessagingService._showNotification(
-            message.notification!.title ?? 'No Title',
-            message.notification!.body ?? 'No Body',
-          );
-          eventBus.fire(ReloadWebViewEvent());
-        }
-      }
-    }
   }
 
   // Request permission for iOS devices
@@ -186,72 +160,61 @@ class FirebaseMessagingService {
     print("Notification tapped with payload: ${response.payload}");
   }
 
-  Future<String> _createNotificationChannelWithUniqueId(
+// Define the channel ID globally for reuse
+  String channelId = 'default_channel_id';
+
+// Create channel during initialization
+  Future<void> _createNotificationChannel(
       bool isSoundEnabled, bool isVibrationEnabled) async {
-    final flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
-
-    // Use a unique ID based on the timestamp
-    String uniqueChannelId = 'channel_${DateTime.now().millisecondsSinceEpoch}';
-
     AndroidNotificationChannel channel = AndroidNotificationChannel(
-      uniqueChannelId, // Dynamic Channel ID
-      'Default', // Channel name
+      channelId,
+      'Default Channel',
       importance: Importance.max,
-      enableVibration: true,
+      enableVibration: isVibrationEnabled,
       playSound: isSoundEnabled,
-      sound: null,
+      sound: null, // For default sound, set this to 'default' if needed
       vibrationPattern:
           isVibrationEnabled ? Int64List.fromList([0, 1000, 500, 2000]) : null,
     );
 
-    await flutterLocalNotificationsPlugin
+    await _flutterLocalNotificationsPlugin
         .resolvePlatformSpecificImplementation<
             AndroidFlutterLocalNotificationsPlugin>()
         ?.createNotificationChannel(channel);
-
-    return uniqueChannelId; // Return the new channel ID
   }
 
   Future<void> _showNotification(String title, String body) async {
-    // Fetch preferences dynamically
     final prefs = await SharedPreferences.getInstance();
     final isSoundEnabled = prefs.getBool('sound') ?? true;
-    log("100-$isSoundEnabled");
     final isVibrationEnabled = prefs.getBool('vibration') ?? true;
 
-    // Create a new notification channel with a unique ID
-    String newChannelId = await _createNotificationChannelWithUniqueId(
-        isSoundEnabled, isVibrationEnabled);
-
+    // Use the pre-created channel
     AndroidNotificationDetails androidPlatformChannelSpecifics =
         AndroidNotificationDetails(
-      newChannelId, // Use the new unique channel ID
+      channelId, // Reuse the channel created earlier
       'Default',
       importance: Importance.max,
       priority: Priority.high,
-      enableVibration: true,
+      enableVibration: isVibrationEnabled,
       showWhen: true,
       playSound: true,
-      sound: null,
+      sound: null, // Default sound, change if custom sound needed
       vibrationPattern:
           isVibrationEnabled ? Int64List.fromList([0, 1000, 500, 2000]) : null,
     );
 
-    // iOS Notification Details
-    // iOS/macOS Notification Details
     DarwinNotificationDetails iosPlatformChannelSpecifics =
         DarwinNotificationDetails(
-      presentAlert: true, // Show alert
-      presentBadge: true, // Display badge
-      presentSound: isSoundEnabled, // Play sound
-      sound: isSoundEnabled ? 'default' : null, // Custom sound or default
+      presentAlert: true,
+      presentBadge: true,
+      presentSound: isSoundEnabled,
+      sound: isSoundEnabled ? 'default' : null,
     );
 
-    // Unified platform-specific notification details
     NotificationDetails platformChannelSpecifics = NotificationDetails(
-        android: androidPlatformChannelSpecifics,
-        iOS:
-            iosPlatformChannelSpecifics); // Use DarwinNotificationDetails for iOS/macOS
+      android: androidPlatformChannelSpecifics,
+      iOS: iosPlatformChannelSpecifics,
+    );
 
     await _flutterLocalNotificationsPlugin.show(
       0,
@@ -261,5 +224,3 @@ class FirebaseMessagingService {
     );
   }
 }
-
-class ReloadWebViewEvent {}

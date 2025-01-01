@@ -3,10 +3,12 @@ import 'dart:developer';
 import 'dart:io' show Platform;
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:satoshi/utils/event_bus.dart';
 import 'package:satoshi/utils/firebase_messaging_service.dart';
 import 'package:satoshi/utils/globalvar.dart';
 import 'package:satoshi/view/widget/bottomnav_widget.dart';
 import 'package:satoshi/view/widget/button_widget.dart';
+import 'package:satoshi/view/widget/text_widget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
@@ -26,7 +28,7 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
   bool _isError = false;
   bool _isWebViewLoaded = false;
   bool _isInitialLoad = true;
-  final bool _isDataReady = true;
+  bool _isDataReady = true;
   late final DateTime _loadStartTime;
   static const Duration _initialLoadTimeout = Duration(seconds: 20);
   dynamic email;
@@ -36,11 +38,9 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
   Future<dynamic> getPrefer() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     String? email = prefs.getString("email");
-    final isSoundEnabled = prefs.getBool('sound') ?? true;
-    final isVibrationEnabled = prefs.getBool('vibration') ?? true;
 
     lang = prefs.getString('selected_language') ?? 'en';
-
+    prefs.setBool('hasNewSignal', false);
     // Only initialize FCM if running on Android or iOS
     String? token = await FirebaseMessaging.instance.getToken();
     log("FCM Token: $token");
@@ -65,7 +65,69 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
         ..setBackgroundColor(const Color(0x00000000))
         ..clearCache()
         ..enableZoom(false)
-        ..setNavigationDelegate
+        ..setNavigationDelegate(
+          NavigationDelegate(
+            onPageStarted: (String url) {
+              _controller!.runJavaScript('''
+                (function() {
+                  var style = document.createElement('style');
+                  style.innerHTML = '.goog-te-banner-frame, #gt-nvframe { display: none !important; }';
+                  document.head.appendChild(style);
+                })();
+              ''');
+              _loadStartTime = DateTime.now();
+              if (mounted) {
+                setState(() {
+                  _isError = false; // Reset error state on new page load
+                });
+              }
+            },
+            onPageFinished: (url) {
+              //Inject JavaScript to hide the toolbar inside the iframe with ID 'gt-nvframe'
+              _controller!.runJavaScript('''
+                (function() {
+                  var translateBar = document.querySelector('.goog-te-banner-frame');
+                  if (translateBar) {
+                    translateBar.style.display = 'none';
+                  }
+
+                  var iframe = document.getElementById('gt-nvframe');
+                  if (iframe) {
+                    iframe.style.display = 'none'; // Hide iframe if found
+                  }
+                  document.body.style.top = '0px'; // Adjust body top to avoid gap
+                })();
+              ''');
+
+              if (mounted) {
+                setState(() {
+                  _isWebViewLoaded = true;
+                  if (_isInitialLoad) {
+                    _isInitialLoad = false;
+                    final duration = DateTime.now().difference(_loadStartTime);
+                    if (duration < _initialLoadTimeout) {
+                      _isError = false;
+                      _isDataReady = false;
+                    } else if (_isError) {}
+                  }
+                });
+              }
+            },
+            onWebResourceError: (error) {
+              if (mounted) {
+                setState(() {
+                  if (_isWebViewLoaded) {
+                    final duration = DateTime.now().difference(_loadStartTime);
+                    if (duration < _initialLoadTimeout) {
+                      _isError =
+                          false; // Ensure initial load is considered successful if it completed
+                    } else {}
+                  }
+                });
+              }
+            },
+          ),
+        )
         ..loadRequest(Uri.parse(urltranslated));
     });
   }
@@ -164,14 +226,30 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
     return Scaffold(
         backgroundColor: Colors.black,
         body: SafeArea(
-          child: _controller == null
+          child: _isError && !_isWebViewLoaded
               ? const Center(
-                  child: Text(
-                    'Loading...',
-                    style: TextStyle(color: Colors.white, fontSize: 16),
+                  child: TextWidget(
+                    text:
+                        'Failed to load the page. Please check your internet connection.',
+                    fontsize: 16,
                   ),
                 )
-              : WebViewWidget(controller: _controller!),
+              : Stack(
+                  children: [
+                    _controller == null
+                        ? const Center(
+                            child:
+                                CircularProgressIndicator()) // Show a loading indicator while _controller is null
+                        : WebViewWidget(controller: _controller!),
+                    (_isDataReady)
+                        ? const Center(
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                            ),
+                          )
+                        : Container(),
+                  ],
+                ),
         ),
         bottomNavigationBar: const Satoshinav(
           number: 0,
