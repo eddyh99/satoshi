@@ -1,6 +1,5 @@
 import 'dart:developer';
 import 'dart:typed_data';
-import 'package:event_bus/event_bus.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get/get.dart';
@@ -51,6 +50,8 @@ class FirebaseMessagingService {
               message.notification!.body ?? 'Check out Message!',
             );
             eventBus.fire(ReloadBadgeEvent());
+            eventBus.fire(ReloadWebViewEvent());
+
           } else if (uri.host == 'signal') {
             await prefs.setBool('hasNewSignal', true);
             _showNotification(
@@ -58,6 +59,7 @@ class FirebaseMessagingService {
               message.notification!.body ?? 'Check out the signal!',
             );
             eventBus.fire(ReloadBadgeEvent());
+            eventBus.fire(ReloadSignalViewEvent());
           }
         }
       }
@@ -96,6 +98,7 @@ class FirebaseMessagingService {
       provisional: false,
       sound: true,
     );
+
 
     log('User granted permission: ${settings.authorizationStatus}');
     if (settings.authorizationStatus == AuthorizationStatus.denied) {

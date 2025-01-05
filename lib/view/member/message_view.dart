@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:satoshi/utils/event_bus.dart';
 import 'package:satoshi/utils/firebase_messaging_service.dart';
 import 'package:satoshi/utils/globalvar.dart';
@@ -53,6 +54,11 @@ class _MessageViewState extends State<MessageView> with WidgetsBindingObserver {
 
   Future<dynamic> getPrefer() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? email = prefs.getString("email") ?? "";
+    if (email.isEmpty) {
+      Get.toNamed("/front-screen/login");
+    }
+
     final savedLang = prefs.getString('selected_language') ?? 'en';
     final msgid = prefs.getString('lastMessageId') ?? '';
     prefs.setString('lastMessageId', "");
@@ -149,6 +155,8 @@ class _MessageViewState extends State<MessageView> with WidgetsBindingObserver {
         _webViewController!
             .runJavaScript("document.body.style.visibility = 'visible';");
       }
+            _webViewController!.reload();
+
     }
   }
 

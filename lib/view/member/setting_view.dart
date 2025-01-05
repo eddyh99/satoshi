@@ -59,7 +59,7 @@ class _SettingViewState extends State<SettingView> {
   Future<dynamic> getPrefer() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     // Retrieve email and id_referral
-    email = prefs.getString("email")!;
+    email = prefs.getString("email") ?? "";
     idRef = prefs.getString("id_referral")!;
     lang = prefs.getString('selected_language') ?? 'en';
     refcode = prefs.getString("refcode") ?? '';

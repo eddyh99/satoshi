@@ -1,6 +1,7 @@
 import 'dart:developer';
 import 'dart:io';
 
+import 'package:android_intent_plus/android_intent.dart';
 import 'package:event_bus/event_bus.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
@@ -9,8 +10,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:satoshi/utils/event_bus.dart';
 import 'package:satoshi/utils/firebase_messaging_service.dart';
+import 'package:satoshi/utils/vibration_worker.dart';
 import 'package:satoshi/view/confirmation_view.dart';
 import 'package:satoshi/view/forgot_pass/forgotpass_view.dart';
 import 'package:satoshi/view/forgot_pass/newpass_view.dart';
@@ -28,6 +31,7 @@ import 'package:satoshi/view/splashscreen.dart';
 import 'package:satoshi/view/subscribe_view.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:vibration/vibration.dart';
+import 'package:workmanager/workmanager.dart';
 
 final appLifecycleNotifier =
     ValueNotifier<AppLifecycleState>(AppLifecycleState.resumed);
@@ -44,15 +48,10 @@ class AppLifecycleObserver extends WidgetsBindingObserver {
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  WidgetsBinding.instance.addObserver(AppLifecycleObserver());
+  Workmanager().initialize(callbackDispatcher);
+  await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
 
-  // Lock orientation to portrait mode
-  await SystemChrome.setPreferredOrientations([
-    DeviceOrientation.portraitUp,
-  ]);
-
-  // Initialize Firebase (for Android/iOS)
-  // Initialize Firebase only if it has not been initialized already
+  // Firebase Initialization
   if (Platform.isAndroid) {
     await Firebase.initializeApp(
       options: const FirebaseOptions(
@@ -64,18 +63,33 @@ void main() async {
       ),
     );
   } else if (Platform.isIOS) {
-    // iOS Firebase initialization will automatically pick up GoogleService-Info.plist
     await Firebase.initializeApp();
   }
 
-  // Initialize Firebase Analytics
   FirebaseAnalytics analytics = FirebaseAnalytics.instance;
-
-  // Background messaging handler setup
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
-
+  await requestNotificationPermission();
+  await requestBatteryOptimizationWhitelist();
+  // Schedule an alarm
   // Run the app
   runApp(const MyApp());
+}
+
+Future<void> requestNotificationPermission() async {
+  if (await Permission.notification.isDenied) {
+    await Permission.notification.request();
+  }
+}
+
+Future<void> requestBatteryOptimizationWhitelist() async {
+  if (Platform.isAndroid) {
+    const intent = AndroidIntent(
+      action: 'android.settings.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS',
+      data:
+          'package:com.pnglobalinternational.satoshi', // Replace with your app's package name
+    );
+    await intent.launch();
+  }
 }
 
 // Background message handler
@@ -86,8 +100,8 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   // Ensure SharedPreferences is initialized
   SharedPreferences prefs = await SharedPreferences.getInstance();
   final isVibrationEnabled = prefs.getBool('vibration') ?? true;
-  final hasVibrator = await Vibration.hasVibrator();
 
+  log("vibration: $isVibrationEnabled");
   final Uri uri = Uri.parse(message.data['link'] ?? '');
   if (uri.scheme == 'satoshi') {
     if (uri.host == 'message') {
@@ -95,15 +109,19 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
       bool isi = prefs.getBool("hasNewMessage") ?? false;
 
       log('Background: hasNewMessage set to $isi');
-      if (hasVibrator != null && hasVibrator && isVibrationEnabled) {
-        Vibration.vibrate(pattern: [0, 1000, 500, 2000]); // Vibrate for 500 ms
+
+      if (isVibrationEnabled) {
+        // Register a one-off task to trigger vibration
+        Vibration.vibrate(pattern: [500, 1000, 500, 2000]);
       }
       eventBus.fire(ReloadBadgeEvent());
     } else if (uri.host == 'signal') {
       await prefs.setBool('hasNewSignal', true); // Update preference
       log('Background: hasNewSignal set to true');
-      if (hasVibrator != null && hasVibrator && isVibrationEnabled) {
-        Vibration.vibrate(pattern: [0, 1000, 500, 2000]); // Vibrate for 500 ms
+
+      if (isVibrationEnabled) {
+        // Register a one-off task to trigger vibration
+        Vibration.vibrate(pattern: [500, 1000, 500, 2000]);
       }
       eventBus.fire(ReloadBadgeEvent());
     }

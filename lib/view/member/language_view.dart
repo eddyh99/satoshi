@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:satoshi/view/widget/text_widget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -34,10 +35,19 @@ class _LanguageViewState extends State<LanguageView>
     {'name': 'Turkish', 'code': 'tr'},
   ];
 
+ Future<dynamic> getPrefer() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? email = prefs.getString("email") ?? "";
+    if (email.isEmpty){
+      Get.toNamed("/front-screen/login");
+    }
+ }
+
   @override
   void initState() {
     super.initState();
     _loadSelectedLanguage();
+    getPrefer();
   }
 
   Future<void> _loadSelectedLanguage() async {

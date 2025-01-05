@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:satoshi/utils/globalvar.dart';
 import 'package:satoshi/view/widget/bottomnav_widget.dart';
 import 'package:satoshi/view/widget/button_widget.dart';
@@ -35,7 +36,10 @@ class _HistoryViewState extends State<HistoryView> with WidgetsBindingObserver {
   Future<dynamic> getPrefer() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     lang = prefs.getString('selected_language') ?? 'en';
-
+    String? email = prefs.getString("email") ?? "";
+    if (email.isEmpty) {
+      Get.toNamed("/front-screen/login");
+    }
     // Update the URL after getting preferences
     urltranslated = "$urlbase/widget/signal/history";
 
@@ -133,6 +137,7 @@ class _HistoryViewState extends State<HistoryView> with WidgetsBindingObserver {
         _webViewController!
             .runJavaScript("document.body.style.visibility = 'visible';");
       }
+      _webViewController!.reload();
     }
   }
 

@@ -3,8 +3,8 @@ import 'dart:developer';
 import 'dart:io' show Platform;
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:satoshi/utils/event_bus.dart';
-import 'package:satoshi/utils/firebase_messaging_service.dart';
 import 'package:satoshi/utils/globalvar.dart';
 import 'package:satoshi/view/widget/bottomnav_widget.dart';
 import 'package:satoshi/view/widget/button_widget.dart';
@@ -37,7 +37,10 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
 
   Future<dynamic> getPrefer() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? email = prefs.getString("email");
+    String? email = prefs.getString("email") ?? "";
+    if (email.isEmpty){
+      Get.toNamed("/front-screen/login");
+    }
 
     lang = prefs.getString('selected_language') ?? 'en';
     prefs.setBool('hasNewSignal', false);
@@ -68,13 +71,6 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
         ..setNavigationDelegate(
           NavigationDelegate(
             onPageStarted: (String url) {
-              _controller!.runJavaScript('''
-                (function() {
-                  var style = document.createElement('style');
-                  style.innerHTML = '.goog-te-banner-frame, #gt-nvframe { display: none !important; }';
-                  document.head.appendChild(style);
-                })();
-              ''');
               _loadStartTime = DateTime.now();
               if (mounted) {
                 setState(() {
@@ -84,21 +80,6 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
             },
             onPageFinished: (url) {
               //Inject JavaScript to hide the toolbar inside the iframe with ID 'gt-nvframe'
-              _controller!.runJavaScript('''
-                (function() {
-                  var translateBar = document.querySelector('.goog-te-banner-frame');
-                  if (translateBar) {
-                    translateBar.style.display = 'none';
-                  }
-
-                  var iframe = document.getElementById('gt-nvframe');
-                  if (iframe) {
-                    iframe.style.display = 'none'; // Hide iframe if found
-                  }
-                  document.body.style.top = '0px'; // Adjust body top to avoid gap
-                })();
-              ''');
-
               if (mounted) {
                 setState(() {
                   _isWebViewLoaded = true;
@@ -138,7 +119,7 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
     getPrefer(); // Fetch preferences before initializing the WebView
     WidgetsBinding.instance.addObserver(this);
     // Subscribe to the EventBus event to reload the WebView when notified
-    _eventBusSubscription = eventBus.on<ReloadWebViewEvent>().listen((event) {
+    _eventBusSubscription = eventBus.on<ReloadSignalViewEvent>().listen((event) {
       log('ReloadWebViewEvent received. Reloading WebView...');
       if (_controller != null) {
         _controller!.reload();
@@ -167,6 +148,7 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
         _controller!
             .runJavaScript("document.body.style.visibility = 'visible';");
       }
+      _controller!.reload();
     }
   }
 
