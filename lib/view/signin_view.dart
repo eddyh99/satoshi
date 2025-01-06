@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'dart:io';
 
 import 'package:crypto/crypto.dart';
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:email_validator/email_validator.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -72,6 +73,12 @@ class _SigninViewState extends State<SigninView> {
     } else {
       throw 'Could not launch $url';
     }
+  }
+
+  Future<String?> _getId() async {
+    var deviceInfo = DeviceInfoPlugin();
+    final androidInfo = await deviceInfo.androidInfo;
+    return androidInfo.id;
   }
 
   @override
@@ -322,6 +329,8 @@ class _SigninViewState extends State<SigninView> {
                           Navigator.pop(context);
                         }
                         if (_signinFormKey.currentState!.validate()) {
+                          String? deviceId = await _getId();
+
                           Map<String, dynamic> mdata;
                           mdata = {
                             'email': _emailTextController.text,
@@ -329,6 +338,7 @@ class _SigninViewState extends State<SigninView> {
                                 .convert(
                                     utf8.encode(_passwordTextController.text))
                                 .toString(),
+                            'deviceid': deviceId
                           };
                           SharedPreferences prefs =
                               await SharedPreferences.getInstance();
@@ -392,7 +402,7 @@ class _SigninViewState extends State<SigninView> {
                               showAlert(psnerr, context);
                             }
                           }).catchError((err) {
-                            log("100-" + err.toString());
+                            log("100-$err");
                             Navigator.pop(context);
                             showAlert(
                               "Something Wrong, Please Contact Administrator",

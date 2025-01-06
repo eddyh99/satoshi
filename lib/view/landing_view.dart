@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:developer';
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -19,15 +20,23 @@ class LandingView extends StatefulWidget {
   }
 }
 
+Future<String?> _getId() async {
+  var deviceInfo = DeviceInfoPlugin();
+  final androidInfo = await deviceInfo.androidInfo;
+  return androidInfo.id;
+}
+
 class _LandingViewState extends State<LandingView> {
   Future<dynamic> getPrefer() async {
     final navigator = Navigator.of(context);
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     String? getEmail = prefs.getString("email");
     String? password = prefs.getString("password");
+    String? deviceId = await _getId();
+
     if (getEmail != null) {
       Map<String, dynamic> mdata;
-      mdata = {'email': getEmail, 'password': password};
+      mdata = {'email': getEmail, 'password': password, 'deviceid': deviceId};
       var url = Uri.parse("$urlapi/auth/signin");
       await satoshiAPI(url, jsonEncode(mdata)).then((ress) {
         var result = jsonDecode(ress);

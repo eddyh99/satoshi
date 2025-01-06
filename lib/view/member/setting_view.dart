@@ -44,8 +44,7 @@ class _SettingViewState extends State<SettingView> {
   Future<void> _launchURL(tipe) async {
     String url = "";
     if (tipe == "howto") {
-      url =
-          'https://www.pnglobalinternational.com/homepage/service?service=c2F0b3NoaV9zaWduYWw=';
+      url = 'https://satoshisignal.app/homepage/secret_formula';
     } else if (tipe == "delete") {
       url = '$urlbase/homepage/account_deletion';
     }

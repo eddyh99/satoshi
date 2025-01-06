@@ -1,7 +1,6 @@
 import 'dart:developer';
 import 'dart:io';
 
-import 'package:android_intent_plus/android_intent.dart';
 import 'package:event_bus/event_bus.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
@@ -69,7 +68,6 @@ void main() async {
   FirebaseAnalytics analytics = FirebaseAnalytics.instance;
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
   await requestNotificationPermission();
-  await requestBatteryOptimizationWhitelist();
   // Schedule an alarm
   // Run the app
   runApp(const MyApp());
@@ -78,17 +76,6 @@ void main() async {
 Future<void> requestNotificationPermission() async {
   if (await Permission.notification.isDenied) {
     await Permission.notification.request();
-  }
-}
-
-Future<void> requestBatteryOptimizationWhitelist() async {
-  if (Platform.isAndroid) {
-    const intent = AndroidIntent(
-      action: 'android.settings.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS',
-      data:
-          'package:com.pnglobalinternational.satoshi', // Replace with your app's package name
-    );
-    await intent.launch();
   }
 }
 
