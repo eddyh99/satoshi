@@ -138,6 +138,7 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) async {
+      _controller!.reload();
     if (state == AppLifecycleState.paused) {
       if (mounted) {
         _controller!
@@ -147,6 +148,7 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
       if (mounted) {
         _controller!
             .runJavaScript("document.body.style.visibility = 'visible';");
+            
       }
       _controller!.reload();
     }

@@ -46,18 +46,17 @@ class FirebaseMessagingService {
           if (uri.host == 'message') {
             await prefs.setBool('hasNewMessage', true);
             _showNotification(
-              message.notification!.title ?? 'Message Notification',
-              message.notification!.body ?? 'Check out Message!',
-            );
+                message.notification!.title ?? 'Message Notification',
+                message.notification!.body ?? 'Check out Message!',
+                'message');
             eventBus.fire(ReloadBadgeEvent());
             eventBus.fire(ReloadWebViewEvent());
-
           } else if (uri.host == 'signal') {
             await prefs.setBool('hasNewSignal', true);
             _showNotification(
-              message.notification!.title ?? 'Signal Notification',
-              message.notification!.body ?? 'Check out the signal!',
-            );
+                message.notification!.title ?? 'Signal Notification',
+                message.notification!.body ?? 'Check out the signal!',
+                'signal');
             eventBus.fire(ReloadBadgeEvent());
             eventBus.fire(ReloadSignalViewEvent());
           }
@@ -98,7 +97,6 @@ class FirebaseMessagingService {
       provisional: false,
       sound: true,
     );
-
 
     log('User granted permission: ${settings.authorizationStatus}');
     if (settings.authorizationStatus == AuthorizationStatus.denied) {
@@ -164,29 +162,46 @@ class FirebaseMessagingService {
   }
 
 // Define the channel ID globally for reuse
-  String channelId = 'default_channel_id';
+  String messageChannelId = 'message_channel_id';
+  String signalChannelId = 'signal_channel_id';
 
 // Create channel during initialization
   Future<void> _createNotificationChannel(
       bool isSoundEnabled, bool isVibrationEnabled) async {
-    AndroidNotificationChannel channel = AndroidNotificationChannel(
-      channelId,
-      'Default Channel',
+    AndroidNotificationChannel messageChannel = AndroidNotificationChannel(
+      messageChannelId,
+      'Message Notifications',
       importance: Importance.max,
-      enableVibration: isVibrationEnabled,
-      playSound: isSoundEnabled,
-      sound: null, // For default sound, set this to 'default' if needed
-      vibrationPattern:
-          isVibrationEnabled ? Int64List.fromList([0, 1000, 500, 2000]) : null,
+      playSound: true,
+      sound: RawResourceAndroidNotificationSound(
+          'message'), // Reference sound without extension
+      enableVibration: true,
+      vibrationPattern: Int64List.fromList([0, 1000, 500, 2000]),
     );
 
-    await _flutterLocalNotificationsPlugin
-        .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>()
-        ?.createNotificationChannel(channel);
+    // Channel for signal notifications
+    AndroidNotificationChannel signalChannel = AndroidNotificationChannel(
+      signalChannelId,
+      'Signal Notifications',
+      importance: Importance.max,
+      playSound: true,
+      sound: RawResourceAndroidNotificationSound(
+          'signal'), // Reference sound without extension
+      enableVibration: true,
+      vibrationPattern: Int64List.fromList([0, 500, 250, 1000]),
+    );
+
+    final androidImplementation =
+        _flutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin>();
+
+    if (androidImplementation != null) {
+      await androidImplementation.createNotificationChannel(messageChannel);
+      await androidImplementation.createNotificationChannel(signalChannel);
+    }
   }
 
-  Future<void> _showNotification(String title, String body) async {
+  Future<void> _showNotification(String title, String body, String type) async {
     final prefs = await SharedPreferences.getInstance();
     final isSoundEnabled = prefs.getBool('sound') ?? true;
     final isVibrationEnabled = prefs.getBool('vibration') ?? true;
@@ -194,14 +209,18 @@ class FirebaseMessagingService {
     // Use the pre-created channel
     AndroidNotificationDetails androidPlatformChannelSpecifics =
         AndroidNotificationDetails(
-      channelId, // Reuse the channel created earlier
-      'Default',
+      type == 'message' ? messageChannelId : signalChannelId,
+      type == 'message' ? 'Message Notifications' : 'Signal Notifications',
       importance: Importance.max,
       priority: Priority.high,
       enableVibration: isVibrationEnabled,
       showWhen: true,
       playSound: true,
-      sound: null, // Default sound, change if custom sound needed
+      sound: isSoundEnabled
+          ? RawResourceAndroidNotificationSound(
+              type == 'message' ? 'message' : 'signal',
+            )
+          : null,
       vibrationPattern:
           isVibrationEnabled ? Int64List.fromList([0, 1000, 500, 2000]) : null,
     );

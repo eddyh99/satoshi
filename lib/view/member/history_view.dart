@@ -127,6 +127,8 @@ class _HistoryViewState extends State<HistoryView> with WidgetsBindingObserver {
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
+                _webViewController!.reload();
+
     if (state == AppLifecycleState.paused) {
       if (mounted) {
         _webViewController!
