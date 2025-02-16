@@ -38,30 +38,53 @@ class _LandingViewState extends State<LandingView> {
       Map<String, dynamic> mdata;
       mdata = {'email': getEmail, 'password': password, 'deviceid': deviceId};
       var url = Uri.parse("$urlapi/auth/signin");
-      await satoshiAPI(url, jsonEncode(mdata)).then((ress) {
+      await satoshiAPI(url, jsonEncode(mdata)).then((ress) async {
         var result = jsonDecode(ress);
         log(result.toString());
 
         if ((result['code'] == "200") &&
             (result["message"]["role"] == "member")) {
-          prefs.setString("id", result["message"]["id"]);
-          prefs.setString("end_date", result["message"]["end_date"]);
-          prefs.setString('period', result["message"]["total_period"]);
+          prefs.setString("id",
+              result["message"]["id"].toString()); // Ensure ID is a String
+          prefs.setString("end_date", result["message"]["end_date"] ?? "");
           prefs.setString(
-              "id_referral", result["message"]["id_referral"] ?? "");
-          prefs.setString("role", result["message"]["role"]);
-          prefs.setString("membership", result["message"]["membership"]);
-          if (result["message"]["membership"] == "expired") {
-            Get.toNamed("/front-screen/subscribe");
+              "period", result["message"]["total_period"]?.toString() ?? "0");
+          prefs.setString("id_referral",
+              result["message"]["id_referral"]?.toString() ?? "");
+          prefs.setString("role", result["message"]["role"] ?? "member");
+          prefs.setString("membership", result["message"]["membership"] ?? "");
+          String membership = result["message"]["membership"]?.toString() ?? "";
+          if (membership == "expired" || membership.isEmpty) {
+            Get.toNamed("/front-screen/subscribe", arguments: [
+              {
+                "email": getEmail,
+              },
+            ]);
           } else {
             Get.toNamed("/front-screen/home");
           }
-        } else {
-          var psnerr = result['message'];
-          navigator.pop();
-          showAlert(psnerr, context);
+        } else if (result['code'] == "400") {
+          List<String> keysToKeep = ['sound', 'vibration', 'selected_language'];
+          SharedPreferences prefs = await SharedPreferences.getInstance();
+          // Store the values of the keys you want to keep
+          Map<String, dynamic> valuesToKeep = {};
+          for (String key in keysToKeep) {
+            if (prefs.containsKey(key)) {
+              valuesToKeep[key] = prefs.get(key); // Store the value
+            }
+          }
+          await prefs.clear();
+          for (String key in valuesToKeep.keys) {
+            dynamic value = valuesToKeep[key];
+            if (value is bool) {
+              await prefs.setBool(key, value);
+            }
+          }
+          showAlert(result["message"], context);
+          Get.toNamed("/front-screen/login");
         }
       }).catchError((err) {
+        log("200-$err");
         navigator.pop();
         showAlert(
           "Something Wrong, Please Contact Administrator",

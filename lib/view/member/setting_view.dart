@@ -194,35 +194,12 @@ class _SettingViewState extends State<SettingView> {
                         ),
                         const SizedBox(height: 10),
 
-                        const TextWidget(
-                          text: "Subscription",
-                          fontsize: 16,
-                        ),
-                        const SizedBox(height: 8),
-                        Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: Colors.amber),
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              (_isLoading)
-                                  ? ShimmerWidget(tinggi: 2.h, lebar: 30.w)
-                                  : TextWidget(
-                                      text: "$period Month",
-                                      fontsize: 16,
-                                    ),
-                              (_isLoading)
-                                  ? ShimmerWidget(tinggi: 2.h, lebar: 30.w)
-                                  : TextWidget(
-                                      text:
-                                          "${difference?.inDays} days remaining",
-                                      fontsize: 13,
-                                    ),
-                            ],
-                          ),
+                        _buildTile(
+                          icon: Icons.subscriptions_outlined,
+                          text: (difference != null && difference!.inDays > 1)
+                              ? "Subscription : ${difference?.inDays} days remaining"
+                              : "Subscription : ${difference?.inDays} day remaining",
+                          trailing: SizedBox.shrink(),
                         ),
                         const SizedBox(height: 8),
                         if (Platform.isAndroid)
@@ -246,6 +223,11 @@ class _SettingViewState extends State<SettingView> {
                         //   },
                         // ),
                         const SizedBox(height: 8),
+                        const TextWidget(
+                          text: "Message Sound & Vibration",
+                          fontsize: 12,
+                        ),
+                        const SizedBox(height: 1),
                         _buildTile(
                           icon: Icons.volume_up,
                           text: 'Sound',
@@ -303,7 +285,7 @@ class _SettingViewState extends State<SettingView> {
                                         color: Colors.blue, size: 24),
                                     SizedBox(width: 8),
                                     Text(
-                                      "How To",
+                                      "How Does It Work?",
                                       style: TextStyle(
                                         color: Colors.white,
                                         fontSize: 16,

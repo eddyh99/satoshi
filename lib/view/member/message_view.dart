@@ -156,7 +156,7 @@ class _MessageViewState extends State<MessageView> with WidgetsBindingObserver {
             .runJavaScript("document.body.style.visibility = 'visible';");
       }
     }
-            _webViewController!.reload();
+    _webViewController!.reload();
   }
 
   void _showErrorBottomSheet() {

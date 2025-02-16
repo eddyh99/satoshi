@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:satoshi/utils/globalvar.dart';
 import 'package:satoshi/view/widget/bottomnav_widget.dart';
 import 'package:satoshi/view/widget/button_widget.dart';
 import 'package:satoshi/view/widget/text_widget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 class UpgradeView extends StatefulWidget {
@@ -107,6 +109,16 @@ class _UpgradeViewState extends State<UpgradeView> with WidgetsBindingObserver {
                 });
               }
             },
+            onNavigationRequest: (NavigationRequest request) {
+              // Check if the URL is the one that should open in the browser
+              if (request.url == "$urlbase/referral/auth/signin") {
+                // Launch the URL in the default browser
+                _launchURL(request.url);
+                // Block WebView from loading this URL
+                return NavigationDecision.prevent;
+              }
+              return NavigationDecision.navigate;
+            },
           ),
         )
         ..addJavaScriptChannel(
@@ -119,6 +131,14 @@ class _UpgradeViewState extends State<UpgradeView> with WidgetsBindingObserver {
         )
         ..loadRequest(Uri.parse(urltranslated));
     });
+  }
+
+  Future<void> _launchURL(String url) async {
+    if (await canLaunchUrlString(url)) {
+      await launchUrlString(url);
+    } else {
+      throw 'Could not launch $url';
+    }
   }
 
   @override

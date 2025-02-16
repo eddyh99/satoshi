@@ -51,6 +51,14 @@ class FirebaseMessagingService {
                 'message');
             eventBus.fire(ReloadBadgeEvent());
             eventBus.fire(ReloadWebViewEvent());
+          } else if (uri.host == 'deleted') {
+            await prefs.setBool('hasNewMessage', true);
+            _showNotification(
+                message.notification!.title ?? 'Message Notification',
+                message.notification!.body ?? 'Check out Message!',
+                'deleted');
+            eventBus.fire(ReloadBadgeEvent());
+            eventBus.fire(ReloadWebViewEvent());
           } else if (uri.host == 'signal') {
             await prefs.setBool('hasNewSignal', true);
             _showNotification(
@@ -72,7 +80,7 @@ class FirebaseMessagingService {
           if (uri.host == 'signal') {
             await prefs.setBool('hasNewSignal', true);
             Get.toNamed("/front-screen/home");
-          } else if (uri.host == 'message') {
+          } else if (uri.host == 'message' || uri.host == 'deleted') {
             final String? messageId =
                 uri.pathSegments.isNotEmpty ? uri.pathSegments[0] : null;
             if (messageId != null) {
@@ -164,6 +172,7 @@ class FirebaseMessagingService {
 // Define the channel ID globally for reuse
   String messageChannelId = 'message_channel_id';
   String signalChannelId = 'signal_channel_id';
+  String deletedChannelId = 'deleted_channel_id';
 
 // Create channel during initialization
   Future<void> _createNotificationChannel(
@@ -175,6 +184,17 @@ class FirebaseMessagingService {
       playSound: true,
       sound: RawResourceAndroidNotificationSound(
           'message'), // Reference sound without extension
+      enableVibration: true,
+      vibrationPattern: Int64List.fromList([0, 1000, 500, 2000]),
+    );
+
+    AndroidNotificationChannel deletedChannel = AndroidNotificationChannel(
+      deletedChannelId,
+      'Message Notifications',
+      importance: Importance.max,
+      playSound: true,
+      sound: RawResourceAndroidNotificationSound(
+          'deleted'), // Reference sound without extension
       enableVibration: true,
       vibrationPattern: Int64List.fromList([0, 1000, 500, 2000]),
     );
@@ -209,20 +229,36 @@ class FirebaseMessagingService {
     // Use the pre-created channel
     AndroidNotificationDetails androidPlatformChannelSpecifics =
         AndroidNotificationDetails(
-      type == 'message' ? messageChannelId : signalChannelId,
-      type == 'message' ? 'Message Notifications' : 'Signal Notifications',
+      type == 'message'
+          ? messageChannelId
+          : type == 'deleted'
+              ? deletedChannelId
+              : signalChannelId,
+      type == 'message'
+          ? 'Message Notifications'
+          : type == 'deleted'
+              ? 'Message Notification'
+              : 'Signal Notifications',
       importance: Importance.max,
       priority: Priority.high,
-      enableVibration: isVibrationEnabled,
+      enableVibration:
+          type == 'message' || type == 'deleted' ? isVibrationEnabled : true,
       showWhen: true,
-      playSound: true,
-      sound: isSoundEnabled
-          ? RawResourceAndroidNotificationSound(
-              type == 'message' ? 'message' : 'signal',
-            )
-          : null,
-      vibrationPattern:
-          isVibrationEnabled ? Int64List.fromList([0, 1000, 500, 2000]) : null,
+      playSound: type == 'message' || type == 'deleted' ? isSoundEnabled : true,
+      sound: (type == 'message' || type == 'deleted') && isSoundEnabled
+          ? RawResourceAndroidNotificationSound(type == 'message'
+              ? 'message'
+              : type == 'deleted'
+                  ? 'deleted'
+                  : 'signal')
+          : null, // Play appropriate sound if sound is enabled for message or deleted, else no sound
+      vibrationPattern: (type == 'message' || type == 'deleted') &&
+              isVibrationEnabled
+          ? Int64List.fromList(
+              [0, 1000, 500, 2000]) // Vibration pattern for message or deleted
+          : (type == 'signal'
+              ? Int64List.fromList([0, 500, 500, 500])
+              : null), // Default vibration for signal or none for others
     );
 
     DarwinNotificationDetails iosPlatformChannelSpecifics =

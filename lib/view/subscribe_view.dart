@@ -1,5 +1,8 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:satoshi/utils/globalvar.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:get/get.dart';
 
@@ -14,7 +17,7 @@ class SubscribeView extends StatefulWidget {
 
 class _SubscribeViewState extends State<SubscribeView> {
   late final WebViewController wvcontroller;
-  var _email = Get.arguments[0]["email"];
+  final _email = Get.arguments[0]["email"];
   //var _password = Get.arguments[0]["password"];
   //var _referral = Get.arguments[0]["referral"];
   String token = "";
@@ -47,6 +50,18 @@ class _SubscribeViewState extends State<SubscribeView> {
           onWebResourceError: (WebResourceError error) {
             // print(error);
           },
+          onNavigationRequest: (NavigationRequest request) {
+            log("100-${request.url}");
+            // Check if the URL is the one that should open in the browser
+            if (request.url == "$urlbase/referral/auth/signin") {
+              log("-Bisa disini-");
+              // Launch the URL in the default browser
+              _launchURL(request.url);
+              // Block WebView from loading this URL
+              return NavigationDecision.prevent;
+            }
+            return NavigationDecision.navigate;
+          },
         ),
       )
       ..addJavaScriptChannel(
@@ -62,6 +77,14 @@ class _SubscribeViewState extends State<SubscribeView> {
         .loadRequest(Uri.parse("$urlbase/widget/subscription?mail=$_email"));
   }
 
+  Future<void> _launchURL(String url) async {
+    if (await canLaunchUrlString(url)) {
+      await launchUrlString(url);
+    } else {
+      throw 'Could not launch $url';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -72,7 +95,17 @@ class _SubscribeViewState extends State<SubscribeView> {
             extendBodyBehindAppBar: true,
             backgroundColor: Colors.black,
             body: SafeArea(
-              child: WebViewWidget(controller: wvcontroller),
+              child: Stack(
+                children: [
+                  WebViewWidget(controller: wvcontroller),
+                  if (isDataReady)
+                    Center(
+                      child: CircularProgressIndicator(
+                        color: Colors.white,
+                      ),
+                    ),
+                ],
+              ),
             ),
             floatingActionButton: (_status == 'success')
                 ? FloatingActionButton.extended(

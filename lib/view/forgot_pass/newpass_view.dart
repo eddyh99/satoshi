@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -21,6 +22,7 @@ class _NewpassViewState extends State<NewpassView> {
   final GlobalKey<FormState> _newpassFormKey = GlobalKey<FormState>();
   final TextEditingController _tokenTextController = TextEditingController();
   final TextEditingController _passwordTextController = TextEditingController();
+  final _email = Get.arguments[0]["email"];
 
   bool _passwordVisible = false;
   bool _emailerror = false;
@@ -52,12 +54,15 @@ class _NewpassViewState extends State<NewpassView> {
                     alignment: Alignment.centerLeft,
                     child: Padding(
                       padding: EdgeInsets.only(left: 6.w),
-                      child: const Column(
+                      child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           TextWidget(
                             text: "Forgot Password",
                             fontsize: 32,
+                          ),
+                          SizedBox(
+                            height: 2.h,
                           ),
                           TextWidget(
                             text:
@@ -148,7 +153,7 @@ class _NewpassViewState extends State<NewpassView> {
                                         fontSize: 10,
                                         color:
                                             Color.fromRGBO(163, 163, 163, 1)),
-                                    hintText: 'Enter your email address',
+                                    hintText: 'Token',
                                   ),
                                 ),
                               ),
@@ -219,7 +224,7 @@ class _NewpassViewState extends State<NewpassView> {
                                           3.0, // Control the height of the input field
                                       horizontal: 20.0,
                                     ),
-                                    hintText: 'Enter your Password',
+                                    hintText: 'Enter your new Password',
                                   ),
                                   validator: (value) {
                                     if (value == null || value.isEmpty) {
@@ -254,6 +259,7 @@ class _NewpassViewState extends State<NewpassView> {
                         if (_newpassFormKey.currentState!.validate()) {
                           Map<String, dynamic> mdata;
                           mdata = {
+                            'email': _email,
                             'token': _tokenTextController.text,
                             'password': sha1
                                 .convert(
@@ -274,6 +280,7 @@ class _NewpassViewState extends State<NewpassView> {
                               Get.toNamed("/front-screen/login");
                             } else {
                               var psnerr = result['message'];
+                              log("100-$psnerr");
                               Navigator.pop(context);
                               showAlert(psnerr, context);
                             }

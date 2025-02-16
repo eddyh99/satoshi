@@ -16,7 +16,6 @@ import 'package:satoshi/utils/vibration_worker.dart';
 import 'package:satoshi/view/confirmation_view.dart';
 import 'package:satoshi/view/forgot_pass/forgotpass_view.dart';
 import 'package:satoshi/view/forgot_pass/newpass_view.dart';
-import 'package:satoshi/view/inapp_view.dart';
 import 'package:satoshi/view/landing_view.dart';
 import 'package:satoshi/view/member/history_view.dart';
 import 'package:satoshi/view/member/home_view.dart';
@@ -30,7 +29,7 @@ import 'package:satoshi/view/splashscreen.dart';
 import 'package:satoshi/view/subscribe_view.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:vibration/vibration.dart';
-import 'package:workmanager/workmanager.dart';
+//import 'package:workmanager/workmanager.dart';
 
 final appLifecycleNotifier =
     ValueNotifier<AppLifecycleState>(AppLifecycleState.resumed);
@@ -47,7 +46,7 @@ class AppLifecycleObserver extends WidgetsBindingObserver {
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  Workmanager().initialize(callbackDispatcher);
+  //Workmanager().initialize(callbackDispatcher);
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
 
   // Firebase Initialization
@@ -106,10 +105,8 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
       await prefs.setBool('hasNewSignal', true); // Update preference
       log('Background: hasNewSignal set to true');
 
-      if (isVibrationEnabled) {
-        // Register a one-off task to trigger vibration
-        Vibration.vibrate(pattern: [500, 1000, 500, 2000]);
-      }
+      // Register a one-off task to trigger vibration
+      Vibration.vibrate(pattern: [500, 1000, 500, 2000]);
       eventBus.fire(ReloadBadgeEvent());
     }
   }
@@ -168,10 +165,10 @@ class MyApp extends StatelessWidget {
             page: () => const SubscribeView(),
             transition: Transition.rightToLeft,
           ),
-          GetPage(
-              name: '/front-screen/inapp',
-              page: () => const InappView(),
-              transition: Transition.fadeIn),
+          // GetPage(
+          //     name: '/front-screen/inapp',
+          //     page: () => const InappView(),
+          //     transition: Transition.fadeIn),
           GetPage(
               name: '/front-screen/home',
               page: () => const HomeView(),

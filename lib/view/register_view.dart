@@ -56,7 +56,7 @@ class _RegisterViewState extends State<RegisterView> {
   bool agreement = false;
   bool _emailerror = false;
   bool _haserror = false;
-
+  bool _isProcessing = false;
   late String _password;
   double _strength = 0;
 
@@ -527,82 +527,98 @@ class _RegisterViewState extends State<RegisterView> {
                                     ),
                                     ButtonWidget(
                                       text: "Register",
-                                      onTap: () async {
-                                        // showLoaderDialog(context);
-                                        // printDebug(context.mounted);
-                                        if (!_signupFormKey.currentState!
-                                            .validate()) {
-                                          return; // Skip if the form is not valid
-                                        }
-                                        if (_signupFormKey.currentState!
-                                            .validate()) {
-                                          Map<String, dynamic> mdata;
-                                          var from;
-                                          if (Platform.isAndroid) {
-                                            from = "Android";
-                                          } else {
-                                            from = "iOS";
-                                          }
-                                          mdata = {
-                                            'email': _emailTextController.text,
-                                            'password': sha1
-                                                .convert(utf8.encode(
-                                                    _passwordTextController
-                                                        .text))
-                                                .toString(),
-                                            "ipaddress": _ipAddress,
-                                            "from": from,
-                                            "referral":
-                                                _refTextController.text.isEmpty
-                                                    ? ""
-                                                    : _refTextController.text
-                                          };
-
-                                          var url = Uri.parse(
-                                              "$urlapi/auth/register");
-                                          await satoshiAPI(
-                                                  url, jsonEncode(mdata))
-                                              .then((ress) {
-                                            log("Request Data: $ress");
-                                            var result = jsonDecode(ress);
-                                            if (result['code'] == '201') {
-                                              dynamic email =
-                                                  _emailTextController.text;
-                                              wvcontroller =
-                                                  WebViewController();
-                                              wvcontroller.loadRequest(
-                                                Uri.parse(
-                                                    "$urlbase/auth/send_activation/${Uri.encodeComponent(email)}?token=${result['message']['token']}"),
-                                              );
-                                              Get.toNamed(
-                                                "/front-screen/confirm",
-                                                arguments: [
-                                                  {
-                                                    "email": email,
-                                                  },
-                                                ],
-                                              );
-                                            } else {
-                                              var psnerr =
-                                                  "This Email(s) is already registered";
-                                              if (Navigator.canPop(context)) {
-                                                Navigator.pop(context);
+                                      onTap: _isProcessing
+                                          ? null // Disable the button if it's processing
+                                          : () async {
+                                              setState(() {
+                                                _isProcessing =
+                                                    true; // Start processing
+                                              });
+                                              // showLoaderDialog(context);
+                                              // printDebug(context.mounted);
+                                              if (!_signupFormKey.currentState!
+                                                  .validate()) {
+                                                setState(() {
+                                                  _isProcessing =
+                                                      false; // Stop processing if validation fails
+                                                });
+                                                return; // Skip if the form is not valid
                                               }
-                                              showAlert(psnerr, context);
-                                            }
-                                          }).catchError((err) {
-                                            if (Navigator.canPop(context)) {
-                                              Navigator.pop(context);
-                                            }
+                                              if (_signupFormKey.currentState!
+                                                  .validate()) {
+                                                Map<String, dynamic> mdata;
+                                                var from;
+                                                if (Platform.isAndroid) {
+                                                  from = "Android";
+                                                } else {
+                                                  from = "iOS";
+                                                }
+                                                mdata = {
+                                                  'email':
+                                                      _emailTextController.text,
+                                                  'password': sha1
+                                                      .convert(utf8.encode(
+                                                          _passwordTextController
+                                                              .text))
+                                                      .toString(),
+                                                  "ipaddress": _ipAddress,
+                                                  "from": from,
+                                                  "referral": _refTextController
+                                                          .text.isEmpty
+                                                      ? ""
+                                                      : _refTextController.text
+                                                };
 
-                                            showAlert(
-                                              err.toString(),
-                                              context,
-                                            );
-                                          });
-                                        }
-                                        // Get.toNamed("/front-screen/home");
-                                      },
+                                                var url = Uri.parse(
+                                                    "$urlbase/widget/auth/signup");
+                                                await satoshiAPI(
+                                                        url, jsonEncode(mdata))
+                                                    .then((ress) {
+                                                  log("Request Data: $ress");
+                                                  var result = jsonDecode(ress);
+                                                  if (result['code'] == '201') {
+                                                    dynamic email =
+                                                        _emailTextController
+                                                            .text;
+                                                    Get.toNamed(
+                                                      "/front-screen/confirm",
+                                                      arguments: [
+                                                        {
+                                                          "email": email,
+                                                        },
+                                                      ],
+                                                    );
+                                                  } else {
+                                                    setState(() {
+                                                      _isProcessing =
+                                                          false; // Re-enable the button after processing is done
+                                                    });
+                                                    var psnerr =
+                                                        "This Email(s) is already registered";
+                                                    if (Navigator.canPop(
+                                                        context)) {
+                                                      Navigator.pop(context);
+                                                    }
+                                                    showAlert(psnerr, context);
+                                                  }
+                                                }).catchError((err) {
+                                                  setState(() {
+                                                    _isProcessing =
+                                                        false; // Re-enable the button after processing is done
+                                                  });
+                                                  if (Navigator.canPop(
+                                                      context)) {
+                                                    Navigator.pop(context);
+                                                  }
+                                                  log(err.toString());
+                                                  showAlert(
+                                                    err.toString(),
+                                                    context,
+                                                  );
+                                                });
+                                              }
+                                              // Get.toNamed("/front-screen/home");
+                                            },
                                       textcolor: const Color(0xFF000000),
                                       backcolor: const Color(0xFFBFA573),
                                       width: 150,

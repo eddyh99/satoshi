@@ -73,12 +73,15 @@ class _ForgotpassViewState extends State<ForgotpassView> {
                   alignment: Alignment.centerLeft,
                   child: Padding(
                     padding: EdgeInsets.only(left: 6.w),
-                    child: const Column(
+                    child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         TextWidget(
                           text: "Forgot Password",
                           fontsize: 32,
+                        ),
+                        SizedBox(
+                          height: 2.h,
                         ),
                         TextWidget(
                           text: "Enter your email to reset your password",
@@ -198,14 +201,19 @@ class _ForgotpassViewState extends State<ForgotpassView> {
                           var result = jsonDecode(ress);
 
                           if (result['code'] == "200") {
-                            _forgotFormKey.currentState?.reset();
-                            _emailTextController.clear();
                             wvcontroller = WebViewController();
                             wvcontroller.loadRequest(
                               Uri.parse(
-                                  "$urlbase/auth/send_resetpassword/${Uri.encodeComponent(email)}"),
+                                  "$urlbase/widget/auth/send_resetpassword/${Uri.encodeComponent(email)}"),
                             );
-                            Get.toNamed("/front-screen/new-password");
+                            Get.toNamed("/front-screen/new-password",
+                                arguments: [
+                                  {
+                                    "email": _emailTextController.text,
+                                  },
+                                ]);
+                            _forgotFormKey.currentState?.reset();
+                            _emailTextController.clear();
                           } else {
                             var psnerr = result['message'];
                             Navigator.pop(context);

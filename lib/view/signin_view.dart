@@ -346,7 +346,7 @@ class _SigninViewState extends State<SigninView> {
                           log(url.toString());
                           await satoshiAPI(url, jsonEncode(mdata)).then((ress) {
                             var result = jsonDecode(ress);
-                            log("100-" + result.toString());
+                            log("100-$result");
                             if ((result['code'] == "200") &&
                                 (result["message"]["role"] == "member")) {
                               prefs.setString(
@@ -359,19 +359,32 @@ class _SigninViewState extends State<SigninView> {
                                       .toString());
                               prefs.setString("refcode",
                                   result["message"]["refcode"] ?? "");
-                              prefs.setString("id", result["message"]["id"]);
+                              prefs.setString(
+                                  "id",
+                                  result["message"]["id"]
+                                      .toString()); // Ensure it's stored as a String
                               prefs.setString("end_date",
                                   result["message"]["end_date"] ?? "");
-                              prefs.setString('period',
-                                  result["message"]["total_period"] ?? '0');
-                              prefs.setString("id_referral",
-                                  result["message"]["id_referral"] ?? "");
                               prefs.setString(
-                                  "role", result["message"]["role"]);
+                                  "period",
+                                  result["message"]["total_period"]
+                                          ?.toString() ??
+                                      "0");
+                              prefs.setString(
+                                  "id_referral",
+                                  result["message"]["id_referral"]
+                                          ?.toString() ??
+                                      "");
+                              prefs.setString("role",
+                                  result["message"]["role"] ?? "member");
                               prefs.setString("membership",
-                                  result["message"]["membership"]);
-                              if (result["message"]["membership"] ==
-                                  "expired") {
+                                  result["message"]["membership"] ?? "");
+
+                              String membership =
+                                  result["message"]["membership"]?.toString() ??
+                                      "";
+                              if (membership == "expired" ||
+                                  membership.isEmpty) {
                                 if (Platform.isAndroid) {
                                   Get.toNamed("/front-screen/subscribe",
                                       arguments: [
